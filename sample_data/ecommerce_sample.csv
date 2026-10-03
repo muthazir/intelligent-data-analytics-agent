@@ -1,0 +1,201 @@
+order_id,order_date,order_status,customer_id,customer_email,product_id,product_name,category,unit_price,quantity,discount,total_amount,payment_method,shipping_city,shipping_state,return_requested
+ORD00087,2024-02-18,delivered,CUST1043,cust1043@example.com,P006,Running Shoes,footwear,4079.81,1,10.0,3671.83,credit_card,pune,maharashtra,no
+ORD00121,2024-07-17,delivered,CUST1038,,P012,Yoga Mat,sports,1584.15,5,5.0,7524.71,upi,mumbai,maharashtra,
+ORD00023,2024-01-21,cancelled,CUST1004,cust1004@example.com,P009,Lipstick Set,beauty,671.51,5,15.0,2853.92,credit_card,bengaluru,karnataka,no
+ORD00012,2024-03-17,delivered,CUST1032,cust1032@example.com,P007,Leather Sandals,footwear,3466.92,5,15.0,14734.41,credit_card,pune,maharashtra,no
+ORD00196,2024-05-21,returned,CUST1037,cust1037@example.com,P010,Table Lamp,home,1003.43,2,0.0,2006.86,net_banking,pune,maharashtra,yes
+ORD00003,2024-03-28,shipped,CUST1013,cust1013@example.com,P012,Yoga Mat,sports,553.44,1,5.0,525.77,wallet,hyderabad,telangana,no
+ORD00122,2024-05-29,delivered,CUST1022,cust1022@example.com,P014,Assorted Snack Box,food,2738.43,1,10.0,2464.59,cod,pune,maharashtra,no
+ORD00095,2024-03-11,shipped,CUST1007,cust1007@example.com,P016,Novel - Fiction,books,3033.04,5,0.0,15165.2,emi,pune,maharashtra,
+ORD00067,2024-03-19,delivered,CUST1052,cust1052@example.com,P011,Cotton Bedsheet,home,690.94,3,5.0,1969.18,wallet,salem,tamil nadu,no
+ORD00064,2024-07-08,confirmed,CUST1048,cust1048@example.com,P009,Lipstick Set,beauty,3022.86,2,15.0,5138.86,credit_card,mumbai,maharashtra,
+ORD00109,2024-04-18,delivered,CUST1028,cust1028@example.com,P008,Face Serum,beauty,1651.5,1,20.0,1321.2,wallet,salem,tamil nadu,no
+ORD00097,2024-02-07,returned,CUST1034,cust1034@example.com,P006,Running Shoes,footwear,3025.6,1,,3025.6,upi,delhi,delhi,yes
+ORD00139,2024-07-05,delivered,CUST1027,cust1027@example.com,P007,Leather Sandals,footwear,1547.27,1,5.0,1469.91,upi,salem,tamil nadu,no
+ORD00066,2024-06-09,delivered,CUST1051,cust1051@example.com,P014,Assorted Snack Box,food,2518.85,2,0.0,5037.7,credit_card,chennai,tamil nadu,
+ORD00189,2024-01-16,delivered,CUST1037,cust1037@example.com,P007,Leather Sandals,footwear,2567.95,1,20.0,2054.36,cod,kolkata,west bengal,no
+ORD00156,2024-04-29,delivered,CUST1019,cust1019@example.com,P005,Denim Jacket,clothing,2348.68,2,5.0,4462.49,credit_card,chennai,tamil nadu,
+ORD00025,2024-07-11,returned,CUST1000,cust1000@example.com,P020,Gift Card,other,468.68,2,0.0,937.36,upi,bengaluru,karnataka,yes
+ORD00100,2024-04-19,delivered,CUST1031,cust1031@example.com,P016,Novel - Fiction,books,4061.81,3,0.0,12185.43,debit_card,hyderabad,telangana,no
+ORD00154,2024-02-03,delivered,CUST1032,cust1032@example.com,P012,Yoga Mat,sports,2179.16,3,0.0,6537.48,credit_card,chennai,tamil nadu,
+ORD00047,2024-06-18,pending,CUST1041,cust1041@example.com,P016,Novel - Fiction,books,368.74,4,10.0,1327.46,upi,pune,maharashtra,no
+ORD00179,2024-05-20,cancelled,CUST1048,cust1048@example.com,P008,Face Serum,beauty,3109.49,5,0.0,15547.45,wallet,salem,tamil nadu,no
+ORD00140,2024-04-19,shipped,CUST1028,cust1028@example.com,P003,Smartwatch,electronics,3934.66,3,10.0,10623.58,upi,chennai,tamil nadu,
+ORD00144,2024-03-07,delivered,CUST1013,cust1013@example.com,P011,Cotton Bedsheet,home,1020.78,2,10.0,1837.4,debit_card,salem,tamil nadu,no
+ORD00075,2024-05-03,returned,CUST1015,cust1015@example.com,P007,Leather Sandals,footwear,979.16,5,0.0,4895.8,emi,bengaluru,karnataka,yes
+ORD00187,2024-06-01,pending,CUST1038,cust1038@example.com,P001,Wireless Earbuds,electronics,3371.35,4,15.0,11462.59,debit_card,chennai,tamil nadu,
+ORD00170,2024-05-15,shipped,CUST1014,,P015,Green Tea Pack,food,3270.51,1,0.0,3270.51,credit_card,mumbai,maharashtra,no
+ORD00102,2024-02-28,delivered,CUST1052,cust1052@example.com,P014,Assorted Snack Box,food,1509.59,3,5.0,4302.33,debit_card,salem,tamil nadu,
+ORD00198,2024-05-18,returned,CUST1003,cust1003@example.com,P004,Cotton T-Shirt,clothing,3474.87,4,,13899.48,cod,delhi,delhi,yes
+ORD00110,2024-03-19,pending,CUST1025,cust1025@example.com,P001,Wireless Earbuds,electronics,1039.24,2,5.0,1974.56,upi,pune,maharashtra,
+ORD00178,2024-06-12,cancelled,CUST1018,cust1018@example.com,P008,Face Serum,beauty,4314.52,4,,17258.08,cod,pune,maharashtra,no
+ORD00058,2024-07-09,delivered,CUST1022,cust1022@example.com,P011,Cotton Bedsheet,home,1243.61,1,5.0,1181.43,credit_card,mumbai,maharashtra,
+ORD00107,2024-04-12,confirmed,CUST1047,cust1047@example.com,P001,Wireless Earbuds,electronics,3395.59,2,10.0,6112.06,upi,mumbai,maharashtra,no
+ORD00161,2024-06-05,delivered,CUST1025,cust1025@example.com,P011,Cotton Bedsheet,home,2356.82,5,20.0,9427.28,wallet,hyderabad,telangana,no
+ORD00085,2024-04-08,cancelled,CUST1006,cust1006@example.com,P021,Umbrella,other,2650.43,3,,7951.29,emi,kolkata,west bengal,
+ORD00125,2024-07-15,delivered,CUST1038,cust1038@example.com,P006,Running Shoes,footwear,3766.35,5,0.0,18831.75,cod,salem,tamil nadu,
+ORD00086,2024-05-24,cancelled,CUST1049,cust1049@example.com,P003,Smartwatch,electronics,3391.5,3,0.0,10174.5,wallet,pune,maharashtra,
+ORD00127,2024-02-19,delivered,CUST1036,cust1036@example.com,P017,Self Help Book,books,3534.84,5,0.0,17674.2,emi,delhi,delhi,no
+ORD00184,2024-04-07,delivered,CUST1024,cust1024@example.com,P018,Building Blocks Set,toys,2992.87,3,,8978.61,wallet,kolkata,west bengal,no
+ORD00081,2024-06-24,cancelled,CUST1014,cust1014@example.com,P014,Assorted Snack Box,food,3457.61,1,20.0,2766.09,upi,chennai,tamil nadu,
+ORD00117,2024-01-18,delivered,CUST1040,cust1040@example.com,P010,Table Lamp,home,1680.95,1,10.0,1512.86,credit_card,chennai,tamil nadu,no
+ORD00130,2024-01-21,delivered,CUST1001,cust1001@example.com,P005,Denim Jacket,clothing,3592.51,2,,7185.02,emi,salem,tamil nadu,no
+ORD00129,2024-05-11,confirmed,CUST1027,,P009,Lipstick Set,beauty,3998.14,1,10.0,3598.33,wallet,pune,maharashtra,
+ORD00061,2024-04-30,delivered,CUST1021,cust1021@example.com,P002,Bluetooth Speaker,electronics,4243.63,4,,16974.52,credit_card,kolkata,west bengal,no
+ORD00123,2024-06-20,delivered,CUST1047,cust1047@example.com,P018,Building Blocks Set,toys,2960.21,4,0.0,11840.84,upi,hyderabad,telangana,
+ORD00028,2024-05-09,delivered,CUST1054,,P015,Green Tea Pack,food,341.78,3,20.0,820.27,upi,mumbai,maharashtra,no
+ORD00041,2024-07-24,delivered,CUST1033,cust1033@example.com,P021,Umbrella,other,4282.67,4,20.0,13704.54,wallet,kolkata,west bengal,no
+ORD00046,2024-03-10,delivered,CUST1001,cust1001@example.com,P014,Assorted Snack Box,food,3806.2,2,15.0,6470.54,credit_card, BENGALURU,west bengal,no
+ORD00192,2024-07-04,delivered,CUST1003,cust1003@example.com,P020,Gift Card,other,3950.25,2,15.0,6715.43,cod,delhi,delhi,no
+ORD00032,2024-07-20,delivered,CUST1024,cust1024@example.com,P016,Novel - Fiction,books,1018.14,4,0.0,4072.56,debit_card,chennai,tamil nadu,no
+ORD00155,2024-04-08,cancelled,CUST1026,cust1026@example.com,P007,Leather Sandals,footwear,4211.82,3,,12635.46,debit_card,salem,tamil nadu,no
+ORD00033,2024-04-12,delivered,CUST1004,cust1004@example.com,P011,Cotton Bedsheet,home,2940.45,4,15.0,9997.53,upi,chennai,tamil nadu,
+ORD00014,2024-07-13,delivered,CUST1008,,P016,Novel - Fiction,books,1303.0,5,0.0,6515.0,wallet,delhi,delhi,no
+ORD00118,2024-03-14,confirmed,CUST1054,,P021,Umbrella,other,2162.8,5,20.0,8651.2,credit_card,salem,tamil nadu,no
+ORD00079,2024-04-22,confirmed,CUST1029,,P007,Leather Sandals,footwear,3938.56,2,,7877.12,emi,hyderabad,telangana,
+ORD00132,2024-03-14,shipped,CUST1007,,P015,Green Tea Pack,food,423.21,4,0.0,1692.84,cod,delhi,delhi,no
+ORD00029,2024-05-21,delivered,CUST1035,,P004,Cotton T-Shirt,clothing,2523.32,3,0.0,7569.96,net_banking,mumbai,maharashtra,
+ORD00019,2024-01-28,shipped,CUST1012,cust1012@example.com,P007,Leather Sandals,footwear,948.17,4,0.0,3792.68,net_banking,bengaluru,karnataka,
+ORD00142,2024-07-18,delivered,CUST1023,cust1023@example.com,P020,Gift Card,other,2782.16,4,5.0,10572.21,net_banking,bengaluru,karnataka,no
+ORD00135,2024-07-07,delivered,CUST1008,,P019,Remote Car Toy,toys,3688.76,2,20.0,5902.02,net_banking,salem,tamil nadu,no
+ORD00098,2024-05-30,delivered,CUST1011,cust1011@example.com,P007,Leather Sandals,footwear,2438.47,1,5.0,2316.55,wallet,bengaluru,karnataka,no
+ORD00089,2024-03-06,cancelled,CUST1030,cust1030@example.com,P011,Cotton Bedsheet,home,3648.41,4,0.0,14593.64,emi,delhi,delhi,no
+ORD00059,2024-07-08,delivered,CUST1046,cust1046@example.com,P019,Remote Car Toy,toys,4415.22,2,5.0,8388.92,debit_card,hyderabad,telangana,
+ORD00114,2024-03-20,delivered,CUST1014,cust1014@example.com,P006,Running Shoes,footwear,2370.6,1,0.0,2370.6,emi,pune,maharashtra,no
+ORD00150,2024-05-21,shipped,CUST1040,cust1040@example.com,P018,Building Blocks Set,toys,2336.19,2,15.0,3971.52,debit_card,mumbai,maharashtra,no
+ORD00037,2024-02-14,delivered,CUST1019,cust1019@example.com,P002,Bluetooth Speaker,electronics,1398.07,4,15.0,4753.44,cod,pune,maharashtra,no
+ORD00193,2024-03-26,delivered,CUST1000,cust1000@example.com,P008,Face Serum,beauty,3398.92,4,20.0,10876.54,wallet,delhi,delhi,no
+ORD00183,2024-06-28,confirmed,CUST1003,cust1003@example.com,P005,Denim Jacket,clothing,288.05,4,,1152.2,debit_card,kolkata,west bengal,no
+ORD00052,2024-07-16,delivered,CUST1043,cust1043@example.com,P004,Cotton T-Shirt,clothing,1660.34,4,0.0,6641.36,wallet,pune,maharashtra,
+ORD00185,2024-07-05,returned,CUST1053,,P002,Bluetooth Speaker,electronics,2164.07,5,10.0,9738.32,emi,delhi,delhi,yes
+ORD00141,2024-06-12,delivered,CUST1032,cust1032@example.com,P006,Running Shoes,footwear,771.09,5,10.0,3469.91,credit_card,mumbai,maharashtra,
+ORD00083,2024-04-07,delivered,CUST1015,cust1015@example.com,P020,Gift Card,other,1160.02,3,20.0,2784.05,credit_card,salem,tamil nadu,no
+ORD00116,2024-07-16,delivered,CUST1029,cust1029@example.com,P021,Umbrella,other,3112.93,5,15.0,13229.95,upi,pune,maharashtra,
+ORD00096,2024-02-02,delivered,CUST1013,,P018,Building Blocks Set,toys,2700.77,2,0.0,5401.54,emi,chennai,tamil nadu,
+ORD00038,2024-04-23,delivered,CUST1032,cust1032@example.com,P006,Running Shoes,footwear,1384.47,5,0.0,6922.35,cod,hyderabad,telangana,
+ORD00133,2024-03-15,delivered,CUST1039,cust1039@example.com,P021,Umbrella,other,964.82,1,5.0,916.58,credit_card,chennai,tamil nadu,no
+ORD00103,2024-01-22,confirmed,CUST1006,cust1006@example.com,P012,Yoga Mat,sports,2570.21,5,15.0,10923.39,upi,bengaluru,karnataka,no
+ORD00099,2024-02-26,returned,CUST1002,cust1002@example.com,P019,Remote Car Toy,toys,2142.48,1,,2142.48,net_banking,kolkata,west bengal,yes
+ORD00050,2024-06-20,confirmed,CUST1013,cust1013@example.com,P011,Cotton Bedsheet,home,879.88,5,20.0,3519.52,credit_card,mumbai,maharashtra,no
+ORD00006,2024-03-31,shipped,CUST1017,cust1017@example.com,P004,Cotton T-Shirt,clothing,2473.51,2,,4947.02,net_banking,hyderabad,telangana,no
+ORD00018,2024-03-31,delivered,CUST1029,cust1029@example.com,P003,Smartwatch,electronics,2992.53,1,,2992.53,cod,pune,maharashtra,no
+ORD00159,2024-06-08,delivered,CUST1007,,P005,Denim Jacket,clothing,1773.41,3,5.0,5054.22,emi,mumbai,maharashtra,
+ORD00169,2024-02-24,shipped,CUST1034,cust1034@example.com,P019,Remote Car Toy,toys,747.14,5,0.0,3735.7,debit_card,chennai,tamil nadu,no
+ORD00200,2024-05-21,delivered,CUST1001,cust1001@example.com,P011,Cotton Bedsheet,home,224.57,4,0.0,898.28,credit_card,bengaluru,karnataka,no
+ORD00195,2024-07-03,delivered,CUST1053,cust1053@example.com,P009,Lipstick Set,beauty,1511.21,1,0.0,1511.21,cod,mumbai,maharashtra,
+ORD00063,2024-07-21,delivered,CUST1049,cust1049@example.com,P017,Self Help Book,books,1443.49,5,5.0,6856.58,wallet,chennai,tamil nadu,no
+ORD00065,2024-04-25,delivered,CUST1030,cust1030@example.com,P009,Lipstick Set,beauty,3225.26,4,,12901.04,debit_card,hyderabad,telangana,no
+ORD00027,2024-01-27,returned,CUST1008,cust1008@example.com,P004,Cotton T-Shirt,clothing,1334.71,5,5.0,6339.87,debit_card,hyderabad,telangana,yes
+ORD00149,2024-03-18,shipped,CUST1020,cust1020@example.com,P009,Lipstick Set,beauty,4271.55,5,0.0,21357.75,upi,delhi,delhi,no
+ORD00042,2024-05-20,delivered,CUST1010,cust1010@example.com,P017,Self Help Book,books,1277.48,2,5.0,2427.21,emi,salem,tamil nadu,no
+ORD00053,2024-04-17,delivered,CUST1006,cust1006@example.com,P013,Cricket Bat,sports,3226.79,4,,12907.16,wallet,hyderabad,telangana,no
+ORD00180,2024-04-02,confirmed,CUST1036,,P018,Building Blocks Set,toys,2641.25,2,,5282.5,emi,salem,tamil nadu,
+ORD00082,2024-07-22,confirmed,CUST1022,cust1022@example.com,P006,Running Shoes,footwear,2460.57,5,0.0,12302.85,debit_card,mumbai,maharashtra,
+ORD00008,2024-05-07,delivered,CUST1041,cust1041@example.com,P010,Table Lamp,home,1222.83,5,20.0,4891.32,wallet,kolkata,west bengal,no
+ORD00092,2024-02-26,delivered,CUST1040,cust1040@example.com,P011,Cotton Bedsheet,home,657.54,1,5.0,624.66,net_banking,bengaluru,karnataka,
+ORD00174,2024-06-13,delivered,CUST1031,cust1031@example.com,P007,Leather Sandals,footwear,1336.84,1,20.0,1069.47,net_banking,hyderabad,telangana,no
+ORD00151,2024-07-03,cancelled,CUST1021,cust1021@example.com,P020,Gift Card,other,3739.78,1,,3739.78,cod,hyderabad,telangana,no
+ORD00071,2024-06-18,returned,CUST1052,cust1052@example.com,P002,Bluetooth Speaker,electronics,533.06,3,10.0,1439.26,emi,chennai,tamil nadu,yes
+ORD00167,2024-06-29,shipped,CUST1045,cust1045@example.com,P017,Self Help Book,books,2588.12,3,15.0,6599.71,cod,kolkata,west bengal,no
+ORD00112,2024-04-27,cancelled,CUST1020,cust1020@example.com,P021,Umbrella,other,3236.32,4,10.0,11650.75,credit_card,pune,maharashtra,
+ORD00009,2024-04-12,delivered,CUST1008,cust1008@example.com,P004,Cotton T-Shirt,clothing,3895.8,2,20.0,6233.28,net_banking,bengaluru,karnataka,no
+ORD00105,2024-02-09,delivered,CUST1014,cust1014@example.com,P013,Cricket Bat,sports,649.75,3,10.0,1754.33,emi,chennai,tamil nadu,no
+ORD00080,2024-06-26,delivered,CUST1005,cust1005@example.com,P019,Remote Car Toy,toys,4300.51,4,0.0,17202.04,wallet,bengaluru,karnataka,
+ORD00126,2024-04-03,delivered,CUST1015,cust1015@example.com,P021,Umbrella,other,3422.9,4,0.0,13691.6,upi,salem,tamil nadu,no
+ORD00165,2024-05-12,shipped,CUST1020,cust1020@example.com,P017,Self Help Book,books,1514.82,2,15.0,2575.19,upi,pune,maharashtra,no
+ORD00030,2024-04-03,cancelled,CUST1050,cust1050@example.com,P002,Bluetooth Speaker,electronics,1063.83,2,5.0,2021.28,emi,kolkata,west bengal,no
+ORD00004,2024-07-05,delivered,CUST1007,cust1007@example.com,P014,Assorted Snack Box,food,2551.38,5,5.0,12119.06,wallet,delhi,delhi,no
+ORD00040,2024-03-03,confirmed,CUST1044,,P005,Denim Jacket,clothing,1101.96,5,15.0,4683.33,debit_card,bengaluru,karnataka,no
+ORD00051,2024-01-28,delivered,CUST1019,cust1019@example.com,P015,Green Tea Pack,food,4245.4,2,,8490.8,cod,delhi,delhi,
+ORD00078,2024-07-17,delivered,CUST1020,cust1020@example.com,P015,Green Tea Pack,food,4449.6,2,0.0,8899.2,debit_card,pune,maharashtra,no
+ORD00164,2024-04-22,delivered,CUST1009,cust1009@example.com,P009,Lipstick Set,beauty,2332.91,5,20.0,9331.64,cod,chennai,tamil nadu,no
+ORD00115,2024-07-28,delivered,CUST1009,cust1009@example.com,P007,Leather Sandals,footwear,1008.13,5,,5040.65,emi,bengaluru,karnataka,
+ORD00055,2024-04-28,delivered,CUST1042,cust1042@example.com,P002,Bluetooth Speaker,electronics,3851.64,2,5.0,7318.12,emi,hyderabad,telangana,
+ORD00091,2024-06-21,delivered,CUST1016,cust1016@example.com,P012,Yoga Mat,sports,3085.54,4,,12342.16,wallet,pune,maharashtra,no
+ORD00163,2024-05-29,delivered,CUST1033,cust1033@example.com,P021,Umbrella,other,792.82,2,,1585.64,cod,bengaluru,karnataka,
+ORD00044,2024-02-09,delivered,CUST1004,cust1004@example.com,P013,Cricket Bat,sports,1958.62,2,10.0,3525.52,emi,chennai,tamil nadu,no
+ORD00160,2024-05-10,delivered,CUST1002,,P007,Leather Sandals,footwear,3647.25,5,15.0,15500.81,wallet,mumbai,maharashtra,
+ORD00049,2024-07-18,returned,CUST1002,cust1002@example.com,P008,Face Serum,beauty,3800.65,5,,19003.25,debit_card,salem,tamil nadu,yes
+ORD00171,2024-05-01,delivered,CUST1012,cust1012@example.com,P011,Cotton Bedsheet,home,1391.56,1,0.0,1391.56,cod,delhi,delhi,no
+ORD00060,2024-05-16,confirmed,CUST1002,cust1002@example.com,P019,Remote Car Toy,toys,3183.77,2,10.0,5730.79,credit_card,chennai,tamil nadu,no
+ORD00016,2024-05-30,shipped,CUST1004,cust1004@example.com,P001,Wireless Earbuds,electronics,443.19,1,0.0,443.19,wallet,delhi,delhi,
+ORD00054,2024-05-17,delivered,CUST1029,cust1029@example.com,P021,Umbrella,other,1552.02,2,0.0,3104.04,upi,salem,tamil nadu,
+ORD00021,2024-04-09,shipped,CUST1050,cust1050@example.com,P011,Cotton Bedsheet,home,3180.17,5,10.0,14310.77,debit_card,delhi,delhi,
+ORD00015,2024-04-12,returned,CUST1041,cust1041@example.com,P019,Remote Car Toy,toys,676.37,2,,1352.74,credit_card,delhi,delhi,yes
+ORD00188,2024-03-15,shipped,CUST1046,cust1046@example.com,P021,Umbrella,other,1180.53,2,15.0,2006.9,debit_card,kolkata,west bengal,
+ORD00134,2024-04-30,pending,CUST1024,cust1024@example.com,P010,Table Lamp,home,1703.36,1,20.0,1362.69,cod,bengaluru,karnataka,no
+ORD00077,2024-04-24,delivered,CUST1022,cust1022@example.com,P019,Remote Car Toy,toys,2130.75,3,20.0,5113.8,debit_card,kolkata,west bengal,
+ORD00010,2024-06-01,returned,CUST1033,cust1033@example.com,P018,Building Blocks Set,toys,3109.23,1,15.0,2642.85,emi,hyderabad,telangana,yes
+ORD00106,2024-06-17,delivered,CUST1017,,P011,Cotton Bedsheet,home,4158.69,3,,12476.07,emi,mumbai,maharashtra,no
+ORD00108,2024-07-03,delivered,CUST1036,cust1036@example.com,P001,Wireless Earbuds,electronics,834.73,5,,4173.65,credit_card,hyderabad,telangana,no
+ORD00158,2024-04-03,pending,CUST1003,cust1003@example.com,P009,Lipstick Set,beauty,2556.52,1,10.0,2300.87,emi,hyderabad,telangana,no
+ORD00013,2024-01-29,cancelled,CUST1053,cust1053@example.com,P008,Face Serum,beauty,1197.79,5,0.0,5988.95,cod,  Chennai  ,tamil nadu,no
+ORD00017,2024-05-04,shipped,CUST1008,cust1008@example.com,P021,Umbrella,other,1207.04,4,0.0,4828.16,credit_card,bengaluru,karnataka,no
+ORD00048,2024-04-07,shipped,CUST1053,cust1053@example.com,P005,Denim Jacket,clothing,234.32,5,,1171.6,upi,delhi,delhi,no
+ORD00148,2024-06-23,delivered,CUST1008,cust1008@example.com,P018,Building Blocks Set,toys,3489.85,2,0.0,6979.7,emi,bengaluru,karnataka,no
+ORD00120,2024-01-22,delivered,CUST1011,,P017,Self Help Book,books,2429.7,5,,12148.5,upi,hyderabad,telangana,no
+ORD00022,2024-01-15,delivered,CUST1034,,P012,Yoga Mat,sports,368.12,4,15.0,1251.61,debit_card,chennai,tamil nadu,no
+ORD00162,2024-01-05,delivered,CUST1043,,P015,Green Tea Pack,food,3615.88,1,5.0,3435.09,cod,delhi,delhi,no
+ORD00131,2024-02-05,delivered,CUST1030,cust1030@example.com,P001,Wireless Earbuds,electronics,232.67,2,15.0,395.54,cod,kolkata,west bengal,
+ORD00182,2024-05-23,delivered,CUST1051,cust1051@example.com,P002,Bluetooth Speaker,electronics,1256.89,1,15.0,1068.36,credit_card,chennai,tamil nadu,no
+ORD00074,2024-01-24,shipped,CUST1053,cust1053@example.com,P016,Novel - Fiction,books,2967.54,2,20.0,4748.06,upi,hyderabad,telangana,no
+ORD00031,2024-07-10,shipped,CUST1015,cust1015@example.com,P007,Leather Sandals,footwear,257.82,3,10.0,696.11,emi,delhi,delhi,
+ORD00147,2024-01-23,confirmed,CUST1025,cust1025@example.com,P017,Self Help Book,books,3495.87,5,,17479.35,upi,bengaluru,karnataka,no
+ORD00034,2024-03-07,shipped,CUST1016,,P021,Umbrella,other,1653.74,3,15.0,4217.04,credit_card,kolkata,west bengal,no
+ORD00146,2024-05-10,shipped,CUST1012,cust1012@example.com,P009,Lipstick Set,beauty,264.34,5,10.0,1189.53,emi,mumbai,maharashtra,no
+ORD00166,2024-07-03,delivered,CUST1051,cust1051@example.com,P021,Umbrella,other,986.35,2,5.0,1874.07,debit_card,hyderabad,telangana,no
+ORD00175,2024-01-04,delivered,CUST1050,cust1050@example.com,P008,Face Serum,beauty,2807.65,4,15.0,9546.01,upi,bengaluru,karnataka,no
+ORD00124,2024-02-24,delivered,CUST1049,cust1049@example.com,P008,Face Serum,beauty,824.01,3,0.0,2472.03,wallet,chennai,tamil nadu,no
+ORD00199,2024-01-18,delivered,CUST1000,cust1000@example.com,P017,Self Help Book,books,412.96,5,20.0,1651.84,net_banking,chennai,tamil nadu,
+ORD00101,2024-05-29,delivered,CUST1020,cust1020@example.com,P021,Umbrella,other,2123.66,5,20.0,8494.64,credit_card,delhi,delhi,no
+ORD00157,2024-06-01,cancelled,CUST1041,cust1041@example.com,P010,Table Lamp,home,3835.2,4,,15340.8,upi,pune,maharashtra,no
+ORD00181,2024-02-22,delivered,CUST1031,,P019,Remote Car Toy,toys,3667.81,4,,14671.24,net_banking,salem,tamil nadu,no
+ORD00062,2024-05-27,delivered,CUST1003,cust1003@example.com,P021,Umbrella,other,520.54,2,,1041.08,emi,kolkata,west bengal,no
+ORD00036,2024-02-01,delivered,CUST1019,cust1019@example.com,P015,Green Tea Pack,food,1900.44,3,0.0,5701.32,net_banking,kolkata,west bengal,no
+ORD00011,2024-07-15,delivered,CUST1007,cust1007@example.com,P007,Leather Sandals,footwear,164.12,3,0.0,492.36,wallet,bengaluru,karnataka,no
+ORD00191,2024-01-15,delivered,CUST1026,cust1026@example.com,P007,Leather Sandals,footwear,1206.43,2,0.0,2412.86,net_banking,pune,maharashtra,
+ORD00072,2024-06-17,cancelled,CUST1029,cust1029@example.com,P009,Lipstick Set,beauty,2858.46,4,0.0,11433.84,debit_card,hyderabad,telangana,no
+ORD00194,2024-03-02,delivered,CUST1049,cust1049@example.com,P017,Self Help Book,books,1491.64,3,10.0,4027.43,net_banking,bengaluru,karnataka,no
+ORD00094,2024-03-12,pending,CUST1023,cust1023@example.com,P016,Novel - Fiction,books,3871.21,1,5.0,3677.65,wallet,pune,maharashtra,
+ORD00119,2024-05-26,delivered,CUST1020,cust1020@example.com,P018,Building Blocks Set,toys,4316.09,4,,17264.36,emi,pune,maharashtra,no
+ORD00145,2024-07-26,delivered,CUST1054,cust1054@example.com,P012,Yoga Mat,sports,2542.49,3,0.0,7627.47,cod,mumbai,maharashtra,no
+ORD00002,2024-02-25,shipped,CUST1038,,P009,Lipstick Set,beauty,1108.92,5,0.0,5544.6,emi,mumbai,maharashtra,no
+ORD00084,2024-06-22,delivered,CUST1004,cust1004@example.com,P013,Cricket Bat,sports,2929.38,4,10.0,10545.77,emi,hyderabad,telangana,
+ORD00190,2024-03-22,delivered,CUST1026,,P014,Assorted Snack Box,food,3431.71,4,0.0,13726.84,upi,mumbai,maharashtra,no
+ORD00088,2024-01-24,cancelled,CUST1020,cust1020@example.com,P006,Running Shoes,footwear,724.9,5,5.0,3443.27,wallet,hyderabad,telangana,no
+ORD00138,2024-04-21,cancelled,CUST1047,cust1047@example.com,P015,Green Tea Pack,food,4385.7,4,5.0,16665.66,emi,hyderabad,telangana,no
+ORD00005,2024-01-12,delivered,CUST1049,cust1049@example.com,P004,Cotton T-Shirt,clothing,3919.2,4,20.0,12541.44,emi,pune,maharashtra,
+ORD00039,2024-02-20,confirmed,CUST1002,cust1002@example.com,P016,Novel - Fiction,books,2131.06,5,,10655.3,cod,kolkata,west bengal,no
+ORD00172,2024-07-04,cancelled,CUST1002,cust1002@example.com,P007,Leather Sandals,footwear,3987.77,2,0.0,7975.54,emi,kolkata,west bengal,no
+ORD00035,2024-02-18,shipped,CUST1045,cust1045@example.com,P018,Building Blocks Set,toys,1734.36,1,5.0,1647.64,wallet,pune,maharashtra,no
+ORD00113,2024-06-07,delivered,CUST1044,cust1044@example.com,P005,Denim Jacket,clothing,3823.51,2,10.0,6882.32,wallet,bengaluru,karnataka,no
+ORD00153,2024-06-25,confirmed,CUST1028,cust1028@example.com,P016,Novel - Fiction,books,1629.84,2,20.0,2607.74,upi,pune,maharashtra,no
+ORD00057,2024-05-05,delivered,CUST1001,,P009,Lipstick Set,beauty,3159.27,3,5.0,9003.92,net_banking,pune,maharashtra,no
+ORD00070,2024-05-05,returned,CUST1030,cust1030@example.com,P013,Cricket Bat,sports,3065.08,2,20.0,4904.13,net_banking,hyderabad,telangana,yes
+ORD00045,2024-07-14,delivered,CUST1030,,P013,Cricket Bat,sports,3427.62,4,20.0,10968.38,wallet,delhi,delhi,no
+ORD00020,2024-05-18,delivered,CUST1005,cust1005@example.com,P008,Face Serum,beauty,1917.9,4,10.0,6904.44,credit_card,mumbai,maharashtra,no
+ORD00007,2024-06-12,delivered,CUST1014,cust1014@example.com,P001,Wireless Earbuds,electronics,3724.84,3,0.0,11174.52,debit_card,pune,maharashtra,
+ORD00056,2024-06-01,delivered,CUST1017,cust1017@example.com,P018,Building Blocks Set,toys,522.42,4,0.0,2089.68,cod,salem,tamil nadu,no
+ORD00076,2024-03-11,delivered,CUST1054,cust1054@example.com,P019,Remote Car Toy,toys,3719.39,3,15.0,9484.44,wallet,salem,tamil nadu,no
+ORD00001,2024-06-12,confirmed,CUST1047,cust1047@example.com,P008,Face Serum,beauty,3353.65,5,,16768.25,net_banking,chennai,tamil nadu,
+ORD00173,2024-02-17,returned,CUST1018,cust1018@example.com,P002,Bluetooth Speaker,electronics,2620.63,1,5.0,2489.6,upi,salem,tamil nadu,yes
+ORD00136,2024-07-26,confirmed,CUST1045,cust1045@example.com,P016,Novel - Fiction,books,1426.48,1,0.0,1426.48,upi,hyderabad,telangana,no
+ORD00128,2024-02-05,cancelled,CUST1003,cust1003@example.com,P012,Yoga Mat,sports,3244.59,5,5.0,15411.8,credit_card,mumbai,maharashtra,
+ORD00177,2024-05-26,pending,CUST1041,cust1041@example.com,P008,Face Serum,beauty,3054.87,4,10.0,10997.53,cod,hyderabad,telangana,no
+ORD00069,2024-06-21,delivered,CUST1036,,P007,Leather Sandals,footwear,2407.49,4,0.0,9629.96,wallet,kolkata,west bengal,no
+ORD00168,2024-04-11,delivered,CUST1049,cust1049@example.com,P010,Table Lamp,home,1401.19,1,10.0,1261.07,cod,hyderabad,telangana,no
+ORD00137,2024-07-27,delivered,CUST1016,,P009,Lipstick Set,beauty,1702.84,1,5.0,1617.7,upi,bengaluru,karnataka,no
+ORD00043,2024-03-11,delivered,CUST1045,cust1045@example.com,P011,Cotton Bedsheet,home,1540.74,5,,7703.7,debit_card,delhi,delhi,no
+ORD00111,2024-05-07,delivered,CUST1011,,P018,Building Blocks Set,toys,2326.14,3,,6978.42,emi,chennai,tamil nadu,no
+ORD00090,2024-07-04,delivered,CUST1025,cust1025@example.com,P019,Remote Car Toy,toys,542.82,4,,2171.28,wallet,bengaluru,karnataka,no
+ORD00073,2024-03-14,delivered,CUST1044,cust1044@example.com,P003,Smartwatch,electronics,2798.59,2,5.0,5317.32,wallet,chennai,tamil nadu,no
+ORD00024,2024-05-29,delivered,CUST1020,cust1020@example.com,P009,Lipstick Set,beauty,1188.28,4,,4753.12,cod,hyderabad,telangana,no
+ORD00143,2024-05-15,delivered,CUST1020,cust1020@example.com,P008,Face Serum,beauty,262.72,2,10.0,472.9,wallet,bengaluru,karnataka,
+ORD00186,2024-03-04,delivered,CUST1009,cust1009@example.com,P004,Cotton T-Shirt,clothing,3671.23,4,0.0,14684.92,debit_card,delhi,delhi,
+ORD00093,2024-05-17,confirmed,CUST1029,cust1029@example.com,P019,Remote Car Toy,toys,2704.93,2,20.0,4327.89,credit_card,salem,tamil nadu,no
+ORD00104,2024-06-19,returned,CUST1027,cust1027@example.com,P002,Bluetooth Speaker,electronics,2761.78,3,,8285.34,wallet,delhi,delhi,yes
+ORD00152,2024-07-15,delivered,CUST1039,cust1039@example.com,P017,Self Help Book,books,2942.3,3,20.0,7061.52,net_banking,hyderabad,telangana,no
+ORD00068,2024-06-02,pending,CUST1027,cust1027@example.com,P021,Umbrella,other,262.51,2,15.0,446.27,wallet,chennai,tamil nadu,no
+ORD00026,2024-03-03,delivered,CUST1010,cust1010@example.com,P019,Remote Car Toy,toys,2810.8,5,,14054.0,emi,hyderabad,telangana,no
+ORD00197,2024-03-06,delivered,CUST1031,cust1031@example.com,P017,Self Help Book,books,881.82,3,,2645.46,cod,salem,tamil nadu,
+ORD00176,2024-01-25,shipped,CUST1008,cust1008@example.com,P008,Face Serum,beauty,1284.42,2,5.0,2440.4,upi,hyderabad,telangana,no

@@ -1,0 +1,53 @@
+# --- Secrets: the real .env stays local (.env.example is committed) ---
+.env
+.env.*
+!.env.example
+
+# --- Python environments and caches ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# --- Runtime data: uploaded CSVs, cleaned files, result JSON, cached PDFs ---
+uploads/
+*.pdf
+
+# --- Databases and backups (SQL Server backups, MIGTEST copies, local SQLite) ---
+*.bak
+*.mdf
+*.ldf
+*.trn
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Test-generated artifacts (browser E2E CSVs and screenshots) ---
+zz_idaa_e2e_test_*
+idaa_e2e_*/
+
+# --- Logs and OS / editor temporary files ---
+*.log
+*.tmp
+*.swp
+*~
+.DS_Store
+Thumbs.db
+.idea/
+.claude/settings.local.json
+
+# --- Private development tooling and internal notes (kept local, not published) ---
+graphify-out/
+.graphifyignore
+.claude/
+.vscode/
+CLAUDE.md
+PROJECT_CONTEXT.md
+MASTER_CLAUDE_CODE_PROMPT.md
+PROJECT LOGS.txt

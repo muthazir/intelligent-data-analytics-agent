@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>IDAA Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.min.js"></script>
+<style>
+/* =====================================================================
+   Design tokens
+   Colour is semantic, never decorative:
+     brand (lime)  = IDAA identity, primary action, the headline metric
+     info  (cyan)  = computed facts, deterministic narration
+     ai    (violet)= Gemini narration
+     alert (coral) = anomalies, failures
+     ok    (green) = saved / connected / done
+     warn  (amber) = degraded but working (file-only mode)
+     data-blue     = secondary series in charts
+   Shape rule: controls 6px, panels 10px, status chips are pills. Nothing else.
+   ===================================================================== */
+:root {
+  color-scheme: dark;
+  --bg: #0b0d10;
+  --bg-raised: #111419;
+  --surface: #161a20;
+  --surface-2: #1c2129;
+  --line: #222831;
+  --line-2: #2f3641;
+  --ink: #edf0f3;
+  --ink-2: #b2bbc6;
+  --ink-3: #828c99;
+  --ink-4: #5b6470;
+
+  --brand: #d4f14b;   --brand-ink: #0b0d10; --brand-soft: rgb(212 241 75 / .10); --brand-hover: #e1fa6c;
+  --info: #52c7dc;    --info-soft: rgb(82 199 220 / .10);
+  --ai: #a58cf5;      --ai-soft: rgb(165 140 245 / .12);
+  --alert: #ff7262;   --alert-soft: rgb(255 114 98 / .11); --alert-strong: #ff3f5f;
+  --ok: #45d39b;      --ok-soft: rgb(69 211 155 / .10);
+  --warn: #efb54c;    --warn-soft: rgb(239 181 76 / .11);
+  --data-blue: #6f8fd8;
+
+  --font: 'Geist', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --fs-2xs: 11px; --fs-xs: 12px; --fs-sm: 13px; --fs-base: 14.5px; --fs-md: 16px;
+  --fs-lg: 19px; --fs-xl: 24px; --fs-title: clamp(24px, 2.2vw, 30px);
+
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 40px; --s8: 56px;
+  --r-control: 6px; --r-panel: 10px; --r-pill: 999px;
+  --shadow-pop: 0 24px 48px -24px rgb(0 0 0 / .75);
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  --t-fast: 140ms; --t-med: 240ms;
+
+  --rail: 256px;
+  --gutter: clamp(16px, 3vw, 44px);
+  --z-rail: 20; --z-sheet: 30; --z-toast: 40;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: var(--fs-base);
+  line-height: 1.55; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.hidden { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.mono { font-family: var(--mono); }
+.tnum { font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-3); }
+[data-lucide], svg.lucide { width: 18px; height: 18px; stroke-width: 1.75; flex-shrink: 0; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.skip { position: absolute; left: 12px; top: -48px; z-index: var(--z-toast); padding: 8px 14px; border-radius: var(--r-control);
+  background: var(--brand); color: var(--brand-ink); font-weight: 600; text-decoration: none; }
+.skip:focus { top: 12px; }
+.label { font-size: var(--fs-2xs); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+
+/* ---------- Buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 18px;
+  border-radius: var(--r-control); border: 1px solid transparent; font-size: var(--fs-sm); font-weight: 600; white-space: nowrap;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), transform var(--t-fast); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-primary { background: var(--brand); color: var(--brand-ink); }
+.btn-primary:hover:not(:disabled) { background: var(--brand-hover); }
+.btn-ghost { background: transparent; border-color: var(--line-2); color: var(--ink-2); }
+.btn-ghost:hover:not(:disabled) { border-color: var(--ink-3); color: var(--ink); }
+.spinner { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-top-color: transparent;
+  animation: spin .7s linear infinite; }
+.link-btn { display: inline-flex; align-items: center; gap: 6px; padding: 2px 0; border: 0; background: none;
+  color: var(--ink-2); font-size: var(--fs-xs); font-weight: 500; transition: color var(--t-fast); }
+.link-btn:hover { color: var(--ink); }
+.link-btn svg { width: 14px; height: 14px; transition: transform var(--t-fast) var(--ease); }
+.link-btn:hover svg { transform: translateX(2px); }
+
+/* ---------- App shell ---------- */
+.app { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); min-height: 100dvh;
+  background: linear-gradient(90deg, var(--bg-raised) calc(var(--rail) - 1px), var(--line) calc(var(--rail) - 1px), var(--line) var(--rail), var(--bg) var(--rail)); }
+.mobilebar { display: none; }
+.rail { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; background: var(--bg-raised);
+  border-right: 1px solid var(--line); z-index: var(--z-rail); }
+.brand { display: flex; align-items: center; gap: 12px; padding: 22px 20px 20px; }
+.brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: var(--r-control);
+  background: var(--brand); color: var(--brand-ink); }
+.brand-mark svg { width: 19px; height: 19px; stroke-width: 2.25; }
+.brand-name { font-size: 17px; font-weight: 700; letter-spacing: -.01em; line-height: 1.1; }
+.brand-sub { font-size: var(--fs-2xs); color: var(--ink-3); text-wrap: balance; }
+
+.nav { display: flex; flex-direction: column; gap: 2px; padding: 6px 12px; }
+.nav-btn { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 12px; border: 0;
+  border-radius: var(--r-control); background: transparent; color: var(--ink-2); font-size: var(--fs-sm); font-weight: 500;
+  text-align: left; transition: background var(--t-fast), color var(--t-fast); }
+.nav-btn:hover { background: var(--surface); color: var(--ink); }
+.nav-btn.active { background: var(--surface-2); color: var(--ink); }
+.nav-btn.active::before { content: ''; position: absolute; left: -12px; top: 9px; bottom: 9px; width: 3px; background: var(--brand); }
+.nav-btn.active svg { color: var(--brand); }
+.nav-short { display: none; }
+.nav-meta { margin-left: auto; font-family: var(--mono); font-size: var(--fs-2xs); color: var(--ink-3); }
+.nav-new { margin-left: auto; padding: 1px 7px; border-radius: var(--r-pill); background: var(--brand); color: var(--brand-ink);
+  font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+
+.rail-context { margin: 18px 12px 0; padding: 16px 12px 0; border-top: 1px solid var(--line); min-width: 0; }
+.rail-context .ctx-name { margin-top: 8px; font-size: var(--fs-sm); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-context .ctx-meta { font-size: var(--fs-xs); color: var(--ink-3); margin-top: 2px; }
+
+.health { margin-top: auto; padding: 16px 20px 20px; border-top: 1px solid var(--line); }
+.health-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.health-row { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 5px 0; font-size: var(--fs-xs); }
+.health-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-4); transition: background var(--t-med), box-shadow var(--t-med); }
+.health-dot.ok { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+.health-dot.warn { background: var(--warn); box-shadow: 0 0 0 3px var(--warn-soft); }
+.health-dot.bad { background: var(--alert); box-shadow: 0 0 0 3px var(--alert-soft); }
+.health-name { color: var(--ink-2); }
+.health-state { font-weight: 500; color: var(--ink-3); }
+.health-row[data-level="ok"] .health-state { color: var(--ok); }
+.health-row[data-level="warn"] .health-state { color: var(--warn); }
+.health-row[data-level="bad"] .health-state { color: var(--alert); }
+
+.main { position: relative; min-width: 0; padding: 0 var(--gutter) var(--s8); }
+.pagehead { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s5); padding: 34px 0 22px;
+  margin-bottom: 30px; border-bottom: 1px solid var(--line); max-width: 1320px; }
+.pagehead h1 { font-size: var(--fs-title); font-weight: 600; letter-spacing: -.025em; line-height: 1.1; }
+.pagehead p { margin-top: 6px; max-width: 64ch; color: var(--ink-3); font-size: var(--fs-sm); }
+.dataset-chip { display: inline-flex; align-items: center; gap: 8px; max-width: min(420px, 40vw); padding: 6px 12px;
+  border: 1px solid var(--line-2); border-radius: var(--r-pill); color: var(--ink-2); font-size: var(--fs-xs); flex-shrink: 0; }
+.dataset-chip svg { width: 14px; height: 14px; color: var(--ink-3); }
+.dataset-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.page { position: absolute; top: 0; left: var(--gutter); right: var(--gutter); max-width: 1320px; height: 0; overflow: hidden;
+  visibility: hidden; pointer-events: none; }
+.page.active { position: static; height: auto; overflow: visible; visibility: visible; pointer-events: auto;
+  animation: page-in var(--t-med) var(--ease); }
+@keyframes page-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.reveal { animation: rise 420ms var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms); }
+
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s4); flex-wrap: wrap; }
+.sec-head h3 { font-size: var(--fs-md); font-weight: 600; letter-spacing: -.01em; }
+.sec-note { font-size: var(--fs-xs); color: var(--ink-3); }
+
+/* ---------- Empty, skeleton ---------- */
+.empty { display: grid; justify-items: start; gap: var(--s3); max-width: 460px; padding: var(--s7) 0; }
+.empty-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: var(--r-panel); background: var(--surface); color: var(--ink-3); }
+.empty-icon svg { width: 22px; height: 22px; }
+.empty h2 { font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.01em; }
+.empty p { color: var(--ink-3); font-size: var(--fs-sm); }
+.empty .btn { margin-top: var(--s2); }
+.skel { border-radius: var(--r-control); background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+  background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
+.skel-wrap { display: grid; gap: var(--s5); }
+.skel-row { display: grid; gap: var(--s4); grid-template-columns: 5fr 7fr; }
+.skel-caption { display: flex; align-items: center; gap: 10px; font-size: var(--fs-sm); color: var(--ink-2); }
+
+/* ---------- Tables ---------- */
+.table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.table th { padding: 8px 10px; border-bottom: 1px solid var(--line-2); text-align: left; font-size: var(--fs-2xs); font-weight: 500;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+.table td { padding: 9px 10px; vertical-align: top; overflow-wrap: break-word; color: var(--ink-2); }
+.table td:nth-child(2) { white-space: nowrap; }
+.table tbody tr:nth-child(even) td { background: rgb(255 255 255 / .02); }
+.table-wrap { overflow-x: auto; margin-top: var(--s3); }
+
+/* =====================================================================
+   Upload
+   ===================================================================== */
+.upload-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--s7); align-items: start; }
+.dropzone { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 22px; align-items: center;
+  min-height: 172px; padding: 32px; border: 1px dashed var(--line-2); border-radius: var(--r-panel); background: var(--bg-raised);
+  cursor: pointer; overflow: hidden; transition: border-color var(--t-med), background var(--t-med); }
+.dropzone:hover, .dropzone.drag { border-color: var(--brand); background: var(--brand-soft); }
+.dropzone.has-file { border-style: solid; }
+.dropzone:focus-visible { outline-offset: 3px; }
+.dz-icon { width: 56px; height: 56px; display: grid; place-items: center; border-radius: var(--r-panel); background: var(--surface-2);
+  color: var(--brand); transition: transform var(--t-med) var(--ease); }
+.dropzone:hover .dz-icon, .dropzone.drag .dz-icon { transform: translateY(-2px); }
+.dz-icon svg { width: 26px; height: 26px; }
+.dropzone h2 { font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.015em; overflow-wrap: anywhere; }
+.dropzone p { margin-top: 4px; color: var(--ink-3); font-size: var(--fs-sm); }
+.dz-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--ink-2); }
+.dz-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.dz-meta svg { width: 14px; height: 14px; color: var(--ink-3); }
+.progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; }
+.progress > div { height: 100%; width: 0; background: var(--brand); transition: width var(--t-fast) linear; }
+
+.schema-pick { margin: 30px 0 0; padding: 0; border: 0; min-width: 0; }
+.schema-pick legend { padding: 0; margin-bottom: 12px; font-size: var(--fs-sm); font-weight: 600; }
+.schema-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s2); }
+.schema-option { position: relative; min-width: 0; }
+.schema-option input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.schema-option label { display: grid; gap: 4px; height: 100%; padding: 12px 14px; border: 1px solid var(--line-2);
+  border-radius: var(--r-control); transition: border-color var(--t-fast), background var(--t-fast); }
+.schema-option:hover label { border-color: var(--ink-3); }
+.schema-option strong { display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm); font-weight: 600; }
+.schema-option strong svg { width: 16px; height: 16px; color: var(--ink-3); transition: color var(--t-fast); }
+.schema-option span { font-size: var(--fs-2xs); line-height: 1.4; color: var(--ink-3); }
+.schema-option input:checked + label { border-color: var(--brand); background: var(--brand-soft); }
+.schema-option input:checked + label strong svg { color: var(--brand); }
+.schema-option input:focus-visible + label { outline: 2px solid var(--brand); outline-offset: 2px; }
+.schema-option input:disabled { cursor: not-allowed; }
+.schema-option input:disabled + label { opacity: .5; }
+
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s4); margin-top: 26px; }
+.actions .hint { font-size: var(--fs-xs); color: var(--ink-3); }
+
+.alert { margin-top: 26px; padding: 18px 20px; border: 1px solid rgb(255 114 98 / .32); border-radius: var(--r-panel);
+  background: var(--alert-soft); animation: rise var(--t-med) var(--ease); }
+.alert h3 { display: flex; align-items: center; gap: 10px; font-size: var(--fs-md); font-weight: 600; }
+.alert h3 svg { color: var(--alert); }
+.alert p { margin-top: 6px; color: var(--ink-2); font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.alert .suggestion { color: var(--ink); }
+.alert .suggestion::before { content: 'Suggestion: '; font-weight: 600; color: var(--warn); }
+.alert ul { margin: 8px 0 0; padding-left: 18px; font-size: var(--fs-sm); color: var(--ink-2); }
+.alert .table td:first-child { color: var(--ink); font-family: var(--mono); font-size: var(--fs-xs); }
+
+.done-strip { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3) var(--s4); margin-top: 26px; padding: 14px 18px;
+  border: 1px solid rgb(69 211 155 / .28); border-radius: var(--r-panel); background: var(--ok-soft); animation: rise var(--t-med) var(--ease); }
+.done-strip svg { color: var(--ok); }
+.done-strip p { flex: 1; min-width: 200px; font-size: var(--fs-sm); color: var(--ink); }
+
+.ingest { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s6) var(--s7); margin-top: var(--s7);
+  padding-top: var(--s6); border-top: 1px solid var(--line); }
+.ingest-block h3 { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: var(--fs-sm); font-weight: 600; }
+.ingest-block h3 svg { width: 16px; height: 16px; color: var(--info); }
+.ingest-lead { font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
+.ingest-lead + p { margin-top: 4px; font-size: var(--fs-xs); color: var(--ink-3); }
+.coverage { display: grid; gap: 10px; margin-top: var(--s4); }
+.cov-row { display: grid; grid-template-columns: 84px minmax(0, 1fr) 52px; align-items: center; gap: var(--s3); font-size: var(--fs-xs); }
+.cov-row .cov-name { color: var(--ink-2); text-transform: capitalize; }
+.cov-bar { height: 4px; border-radius: var(--r-pill); background: var(--ink-4); min-width: 2px; }
+.cov-row.win .cov-bar { background: var(--brand); }
+.cov-row.win .cov-name { color: var(--ink); font-weight: 600; }
+.cov-row .cov-val { text-align: right; font-family: var(--mono); color: var(--ink-3); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--line-2); border-radius: var(--r-pill);
+  font-family: var(--mono); font-size: var(--fs-2xs); color: var(--ink-3); overflow-wrap: anywhere; }
+.chip b { font-weight: 500; color: var(--info); }
+.facts-list { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 9px var(--s5); font-size: var(--fs-sm); }
+.facts-list dt { color: var(--ink-3); }
+.facts-list dd { text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ingest details { margin-top: var(--s3); font-size: var(--fs-xs); color: var(--ink-3); }
+.ingest summary { cursor: pointer; color: var(--ink-2); }
+.ingest details ul { margin: 8px 0 0; padding-left: 18px; }
+
+/* Pipeline timeline */
+.pipeline { position: sticky; top: 24px; padding: 22px 22px 6px; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--bg-raised); }
+.pipeline-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); }
+.pipeline-head h2 { font-size: var(--fs-sm); font-weight: 600; }
+.pipe-state { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--ink-3); }
+.pipe-state[data-tone="run"] { color: var(--brand); }
+.pipe-state[data-tone="ok"] { color: var(--ok); }
+.pipe-state[data-tone="bad"] { color: var(--alert); }
+.steps { list-style: none; margin: 20px 0 0; padding: 0; }
+.step { position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 14px; padding-bottom: 20px; }
+.step::before { content: ''; position: absolute; left: 10.5px; top: 26px; bottom: 4px; width: 1px; background: var(--line-2); transition: background var(--t-med); }
+.step:last-child::before { display: none; }
+.step-icon { position: relative; z-index: 1; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
+  border: 1.5px solid var(--line-2); background: var(--bg-raised); color: var(--bg); font-size: 11px; font-weight: 700;
+  transition: background var(--t-med), border-color var(--t-med); }
+.step-name { font-size: var(--fs-sm); font-weight: 600; line-height: 22px; color: var(--ink-3); transition: color var(--t-med); }
+.step-detail { margin-top: 2px; font-size: var(--fs-xs); color: var(--ink-3); overflow-wrap: anywhere; }
+.step[data-state="running"] .step-icon { border-color: var(--brand); border-top-color: transparent; animation: spin .8s linear infinite; }
+.step[data-state="running"] .step-name, .step[data-state="done"] .step-name { color: var(--ink); }
+.step[data-state="done"] .step-icon { background: var(--ok); border-color: var(--ok); }
+.step[data-state="done"] .step-icon::after { content: '\2713'; }
+.step[data-state="done"]::before { background: rgb(69 211 155 / .45); }
+.step[data-state="error"] .step-icon { background: var(--alert); border-color: var(--alert); }
+.step[data-state="error"] .step-icon::after { content: '!'; }
+.step[data-state="error"] .step-name { color: var(--alert); }
+.step[data-state="skipped"] .step-icon { border-style: dashed; border-color: var(--warn); }
+.step[data-state="skipped"] .step-name { color: var(--ink-2); }
+
+/* =====================================================================
+   Dashboard
+   ===================================================================== */
+.identity { margin-bottom: var(--s5); }
+.identity-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; font-size: var(--fs-xs); color: var(--ink-3); }
+.schema-tag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--r-pill); background: var(--brand-soft);
+  color: var(--brand); font-size: var(--fs-2xs); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+.schema-tag svg { width: 13px; height: 13px; }
+.dataset-name { font-size: clamp(24px, 2.6vw, 34px); font-weight: 600; letter-spacing: -.025em; line-height: 1.12; overflow-wrap: anywhere; }
+
+.signals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-bottom: var(--s6); overflow: hidden;
+  border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--line); }
+.signal { display: flex; align-items: flex-start; gap: 12px; min-width: 0; padding: 14px 16px; border: 0; background: var(--bg);
+  color: inherit; text-align: left; transition: background var(--t-fast); }
+button.signal:hover { background: var(--bg-raised); }
+button.signal:hover .signal-go { opacity: 1; transform: translateX(0); }
+.signal-icon { width: 32px; height: 32px; display: grid; place-items: center; flex-shrink: 0; border-radius: var(--r-control);
+  background: var(--surface); color: var(--ink-3); }
+.signal-icon svg { width: 17px; height: 17px; }
+.signal[data-tone="ok"] .signal-icon { background: var(--ok-soft); color: var(--ok); }
+.signal[data-tone="alert"] .signal-icon { background: var(--alert-soft); color: var(--alert); }
+.signal[data-tone="ai"] .signal-icon { background: var(--ai-soft); color: var(--ai); }
+.signal[data-tone="info"] .signal-icon { background: var(--info-soft); color: var(--info); }
+.signal[data-tone="warn"] .signal-icon { background: var(--warn-soft); color: var(--warn); }
+.signal-body { min-width: 0; flex: 1; }
+.signal-label { font-size: var(--fs-2xs); color: var(--ink-3); }
+.signal-value { margin-top: 1px; font-size: var(--fs-sm); font-weight: 600; overflow-wrap: anywhere; }
+.signal-go { align-self: center; color: var(--ink-3); opacity: 0; transform: translateX(-3px); transition: opacity var(--t-fast), transform var(--t-fast) var(--ease); }
+.signal-go svg { width: 15px; height: 15px; }
+
+/* KPI band: one dominant figure, supporting figures on a hairline grid */
+#kpiGrid:not(.hero) { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--s4); margin-bottom: var(--s7); }
+#kpiGrid.hero { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-bottom: var(--s7);
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.kpi { min-width: 0; container-type: inline-size; }
+.kpi-label { font-size: var(--fs-xs); font-weight: 500; color: var(--ink-3); }
+.kpi-value { margin-top: 6px; font-size: clamp(18px, 13cqi, 26px); font-weight: 600; letter-spacing: -.02em; line-height: 1.15;
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kpi-value.na { color: var(--ink-4); }
+.kpi--primary { padding: 28px 32px 28px 0; border-right: 1px solid var(--line); }
+.kpi--primary .kpi-label { font-size: var(--fs-sm); color: var(--ink-2); }
+.kpi--primary .kpi-value { margin-top: 10px; font-size: clamp(32px, 11.5cqi, 60px); letter-spacing: -.035em; line-height: 1.02; color: var(--ink); }
+.kpi--primary::after { content: ''; display: block; width: 36px; height: 3px; margin-top: 18px; background: var(--brand); }
+.kpi-note { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin-top: 14px; font-size: var(--fs-sm); color: var(--ink-2); }
+.delta { font-family: var(--mono); font-size: var(--fs-xs); font-weight: 500; padding: 1px 7px; border-radius: var(--r-pill); }
+.delta.up { color: var(--ok); background: var(--ok-soft); }
+.delta.down { color: var(--alert); background: var(--alert-soft); }
+.delta.flat { color: var(--ink-2); background: var(--surface); }
+.kpi-support { display: grid; gap: 1px; background: var(--line); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.kpi-support[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.kpi-support[data-n="5"] { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.kpi-support[data-n="5"] > .kpi:nth-child(-n+3) { grid-column: span 2; }
+.kpi-support[data-n="5"] > .kpi:nth-child(n+4) { grid-column: span 3; }
+.kpi-support > .kpi { padding: 22px 24px; background: var(--bg); transition: background var(--t-fast); }
+.kpi-support > .kpi:hover { background: var(--bg-raised); }
+
+/* Analysis band: charts sit on the page, divided by a hairline */
+.analysis { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); margin-bottom: var(--s7); }
+.viz { min-width: 0; padding-right: var(--s6); }
+.viz + .viz { padding: 0 0 0 var(--s6); border-left: 1px solid var(--line); }
+.viz-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s4); flex-wrap: wrap; }
+.viz-head h3 { font-size: var(--fs-md); font-weight: 600; letter-spacing: -.01em; }
+.viz-note { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--ink-3); }
+.chart-box { position: relative; height: 290px; }
+
+.lower { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); padding-top: var(--s6); border-top: 1px solid var(--line); }
+.lower > section { min-width: 0; padding-right: var(--s6); }
+.lower > section + section { padding: 0 0 0 var(--s6); border-left: 1px solid var(--line); }
+.rank { width: 100%; border-collapse: collapse; }
+.rank td { padding: 9px 0; font-size: var(--fs-sm); vertical-align: middle; }
+.rank .r-n { width: 30px; font-family: var(--mono); font-size: var(--fs-xs); color: var(--ink-4); }
+.rank .r-name { padding-right: var(--s4); overflow-wrap: anywhere; text-transform: capitalize; }
+.rank .r-val { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--ink); }
+.r-bar { height: 3px; margin-top: 7px; border-radius: var(--r-pill); background: var(--data-blue); opacity: .55; transform-origin: left; }
+.rank tr:first-child .r-bar { background: var(--info); opacity: 1; }
+.rank tr:first-child .r-n { color: var(--info); }
+
+.anom { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 9px 0; }
+.anom-dir { width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--r-control); background: var(--alert-soft); color: var(--alert); }
+.anom-dir svg { width: 16px; height: 16px; }
+.anom-title { font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.anom-meta { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--ink-3); }
+.zpill { font-family: var(--mono); font-size: var(--fs-2xs); font-weight: 500; padding: 2px 8px; border-radius: var(--r-pill);
+  background: var(--alert-soft); color: var(--alert); white-space: nowrap; }
+.anom.clear .anom-dir { background: var(--ok-soft); color: var(--ok); }
+.anom-more { margin-top: var(--s2); }
+
+.callout { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--s5); margin-top: var(--s7);
+  padding: 22px 24px; border: 1px solid rgb(165 140 245 / .24); border-radius: var(--r-panel); background: var(--ai-soft); }
+.callout[data-source="fallback"] { border-color: rgb(82 199 220 / .24); background: var(--info-soft); }
+.callout-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--r-panel); background: var(--bg); color: var(--ai); }
+.callout[data-source="fallback"] .callout-icon { color: var(--info); }
+.callout[data-source="fallback"] .hl { color: var(--info); }
+.callout-src { font-size: var(--fs-2xs); color: var(--ink-3); }
+.callout-text { margin-top: 3px; font-size: var(--fs-md); line-height: 1.5; overflow-wrap: anywhere; }
+
+/* =====================================================================
+   Insights
+   ===================================================================== */
+.lineage { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--s3); margin-bottom: var(--s7); }
+.lin-node { display: flex; align-items: center; gap: 14px; min-width: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-panel);
+  background: transparent; color: inherit; text-align: left; transition: border-color var(--t-fast), background var(--t-fast); }
+button.lin-node:hover { border-color: var(--line-2); background: var(--bg-raised); }
+.lin-icon { width: 36px; height: 36px; display: grid; place-items: center; flex-shrink: 0; border-radius: var(--r-control); }
+.lin-node[data-tone="info"] .lin-icon { background: var(--info-soft); color: var(--info); }
+.lin-node[data-tone="alert"] .lin-icon { background: var(--alert-soft); color: var(--alert); }
+.lin-node[data-tone="ok"] .lin-icon { background: var(--ok-soft); color: var(--ok); }
+.lin-node[data-tone="ai"] .lin-icon { background: var(--ai-soft); color: var(--ai); }
+.lin-count { font-size: var(--fs-xl); font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.lin-label { margin-top: 3px; font-size: var(--fs-xs); color: var(--ink-3); }
+.lin-arrow { color: var(--ink-4); }
+
+.insights-layout { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s8); align-items: start; }
+.narr-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3); margin-bottom: 10px; }
+.narr-head h2 { font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.015em; }
+.source-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: 600; }
+.source-badge.gemini { background: var(--ai-soft); color: var(--ai); }
+.source-badge.fallback { background: var(--info-soft); color: var(--info); }
+.narr-note { max-width: 62ch; margin-bottom: var(--s5); font-size: var(--fs-sm); color: var(--ink-3); }
+.narr-list { list-style: none; margin: 0; padding: 0 0 0 22px; border-left: 2px solid var(--ai); }
+.narr-list[data-source="fallback"] { border-left-color: var(--info); }
+.narr-list li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 6px; padding: 12px 0; font-size: var(--fs-md); line-height: 1.6; }
+.narr-list li + li { border-top: 1px solid var(--line); }
+.narr-n { font-family: var(--mono); font-size: var(--fs-xs); line-height: 2.1; color: var(--ink-4); }
+.narr-text { overflow-wrap: anywhere; }
+.hl { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ai); }
+.narr-list[data-source="fallback"] .hl { color: var(--info); }
+
+.facts h3 { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: var(--fs-sm); font-weight: 600; }
+.facts h3 svg { width: 16px; height: 16px; color: var(--info); }
+.fact-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid var(--line);
+  border-radius: var(--r-panel); background: var(--line); }
+.fact { padding: 12px 14px; background: var(--bg); min-width: 0; }
+.fact dt { font-size: var(--fs-2xs); color: var(--ink-3); }
+.fact dd { margin-top: 3px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.fact.wide, .fact:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.fact dd small { font-weight: 400; color: var(--ink-3); }
+.facts .sub { margin-top: var(--s5); }
+details.raw { margin-top: var(--s5); }
+details.raw summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: var(--fs-xs); color: var(--ink-2); list-style: none; }
+details.raw summary::-webkit-details-marker { display: none; }
+details.raw summary svg { width: 14px; height: 14px; transition: transform var(--t-fast) var(--ease); }
+details.raw[open] summary svg { transform: rotate(90deg); }
+pre.json { max-height: 360px; margin: 10px 0 0; padding: 14px; overflow: auto; border: 1px solid var(--line); border-radius: var(--r-panel);
+  background: var(--bg-raised); color: var(--ink-2); font-family: var(--mono); font-size: var(--fs-2xs); line-height: 1.6; }
+
+.ledger { margin-top: var(--s8); padding-top: var(--s6); border-top: 1px solid var(--line); scroll-margin-top: 24px; }
+.ledger-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: var(--fs-2xs); color: var(--ink-3); }
+.sev { display: inline-flex; align-items: center; gap: 6px; }
+.sev i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.sev-elevated { background: var(--warn); } .sev-high { background: var(--alert); } .sev-extreme { background: var(--alert-strong); }
+.lrow { border-top: 1px solid var(--line); }
+.lrow:last-of-type { border-bottom: 1px solid var(--line); }
+.lrow summary { display: grid; grid-template-columns: 30px minmax(0, 1.3fr) minmax(0, 1fr) minmax(110px, 1.3fr) 80px 18px; align-items: center;
+  gap: var(--s4); padding: 12px 4px; cursor: pointer; list-style: none; transition: background var(--t-fast); }
+.lrow summary::-webkit-details-marker { display: none; }
+.lrow summary:hover { background: var(--bg-raised); }
+.lrow-col { font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.lrow-col small { display: block; font-size: var(--fs-2xs); color: var(--ink-3); }
+.lrow-val { font-family: var(--mono); font-size: var(--fs-sm); text-align: right; overflow-wrap: anywhere; }
+.lrow-row { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--ink-3); text-align: right; }
+.lrow-chev { color: var(--ink-3); transition: transform var(--t-fast) var(--ease); }
+.lrow-chev svg { width: 15px; height: 15px; }
+.lrow[open] .lrow-chev { transform: rotate(90deg); }
+.zscale { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.ztrack { position: relative; height: 12px; margin-right: 5px; }
+.ztrack::before { content: ''; position: absolute; left: 0; right: -5px; top: 50%; height: 1px; background: var(--line-2); }
+.zdot { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; }
+.zlab { font-family: var(--mono); font-size: var(--fs-2xs); color: var(--ink-2); white-space: nowrap; }
+.lrow-body { padding: 4px 4px 16px 50px; font-size: var(--fs-sm); color: var(--ink-2); max-width: 80ch; }
+.ledger-more { margin-top: var(--s4); }
+
+/* =====================================================================
+   Report
+   ===================================================================== */
+.report-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--s7); align-items: start; }
+.sheet { position: relative; padding: clamp(22px, 3.6vw, 44px); overflow: hidden; border: 1px solid var(--line-2); border-radius: var(--r-panel);
+  background: var(--bg-raised); box-shadow: var(--shadow-pop); }
+.sheet::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--brand); }
+.sheet-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--s3);
+  padding-bottom: 20px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.sheet-title { font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; }
+.sheet-meta { margin-top: 4px; font-size: var(--fs-xs); color: var(--ink-3); overflow-wrap: anywhere; }
+.sheet h3 { margin: 28px 0 12px; font-size: var(--fs-sm); font-weight: 600; }
+.sheet h3 span { font-weight: 400; color: var(--ink-3); }
+#reportKpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; overflow: hidden;
+  border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--line); }
+#reportKpis[data-count="6"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#reportKpis[data-count="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#reportKpis .kpi { padding: 12px 14px; background: var(--bg-raised); }
+#reportKpis .kpi-value { font-size: clamp(15px, 11cqi, 19px); }
+.bars { display: grid; gap: 7px; }
+.bars-title { margin-bottom: 8px; font-size: var(--fs-xs); color: var(--ink-2); }
+.bars + .bars-title { margin-top: 20px; }
+.bar-row { display: grid; grid-template-columns: minmax(70px, 140px) minmax(0, 1fr) auto; align-items: center; gap: var(--s3); font-size: var(--fs-xs); }
+.bar-row .b-name { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize; }
+.bar-row .b-bar { height: 8px; border-radius: 0 var(--r-pill) var(--r-pill) 0; background: var(--data-blue); min-width: 2px; }
+.bar-row.lead .b-bar { background: var(--info); }
+.bar-row .b-val { font-family: var(--mono); color: var(--ink-3); text-align: right; white-space: nowrap; }
+.doc-list { margin: 0; padding-left: 18px; }
+.doc-list li { margin-bottom: 6px; font-size: var(--fs-sm); color: var(--ink-2); overflow-wrap: anywhere; }
+
+.report-rail { position: sticky; top: 24px; display: grid; gap: var(--s5); }
+.gen { padding: 20px; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--bg-raised); }
+.gen-state { display: flex; align-items: center; gap: 10px; font-size: var(--fs-sm); font-weight: 600; }
+.gen-state svg { width: 18px; height: 18px; color: var(--ink-3); }
+.gen[data-state="ready"] .gen-state svg { color: var(--brand); }
+.gen[data-state="busy"] .gen-state svg { color: var(--brand); animation: spin 1s linear infinite; }
+.gen[data-state="done"] .gen-state svg { color: var(--ok); }
+.gen[data-state="error"] .gen-state svg { color: var(--alert); }
+.gen .btn { width: 100%; margin-top: var(--s4); }
+.gen-hint { margin-top: 10px; font-size: var(--fs-xs); color: var(--ink-3); }
+.contents { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.contents li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; font-size: var(--fs-sm); color: var(--ink-2); }
+.contents li svg { width: 16px; height: 16px; margin-top: 2px; color: var(--ok); }
+.contents li.off svg { color: var(--ink-4); }
+.contents small { display: block; font-size: var(--fs-2xs); color: var(--ink-3); }
+
+/* =====================================================================
+   Architecture
+   ===================================================================== */
+.flow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--s2); margin-bottom: var(--s8); counter-reset: stage; }
+.stage { position: relative; min-width: 0; padding: 16px 14px 14px; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--bg-raised);
+  transition: border-color var(--t-fast), transform var(--t-fast) var(--ease); }
+.stage:hover { border-color: var(--line-2); transform: translateY(-2px); }
+.stage::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 3px; border-radius: var(--r-panel) var(--r-panel) 0 0; background: var(--tone, var(--ink-4)); }
+.stage svg { width: 18px; height: 18px; color: var(--tone, var(--ink-3)); }
+.stage h3 { margin-top: 10px; font-size: var(--fs-sm); font-weight: 600; }
+.stage p { margin-top: 4px; font-size: var(--fs-2xs); line-height: 1.45; color: var(--ink-3); }
+.arch-cols { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s8); }
+.arch-cols h2 { margin-bottom: var(--s4); font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.015em; }
+.tables-list { display: grid; gap: 14px; }
+.tables-list div { display: grid; grid-template-columns: minmax(150px, 210px) minmax(0, 1fr); gap: var(--s4); font-size: var(--fs-sm); }
+.tables-list dt { font-family: var(--mono); font-size: var(--fs-xs); color: var(--ok); padding-top: 1px; overflow-wrap: anywhere; }
+.tables-list dd { color: var(--ink-2); }
+.prose p { font-size: var(--fs-sm); color: var(--ink-2); max-width: 60ch; }
+.prose p + p { margin-top: var(--s3); }
+.endpoints { margin-top: var(--s6); display: grid; gap: 8px; }
+.endpoint { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: var(--s3); font-family: var(--mono); font-size: var(--fs-xs); color: var(--ink-2); overflow-wrap: anywhere; }
+.endpoint b { font-weight: 500; color: var(--info); }
+
+/* ---------- Toast ---------- */
+.toast { position: fixed; right: 20px; bottom: 20px; z-index: var(--z-toast); display: flex; align-items: center; gap: 10px;
+  max-width: min(380px, calc(100vw - 32px)); padding: 12px 16px; border: 1px solid var(--line-2); border-radius: var(--r-panel);
+  background: var(--surface-2); box-shadow: var(--shadow-pop); font-size: var(--fs-sm); opacity: 0; transform: translateY(12px);
+  pointer-events: none; transition: opacity var(--t-med), transform var(--t-med) var(--ease); }
+.toast::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex-shrink: 0; }
+.toast.err::before { background: var(--alert); }
+.toast.show { opacity: 1; transform: none; }
+
+/* =====================================================================
+   Responsive
+   ===================================================================== */
+@media (max-width: 1200px) {
+  .upload-layout { grid-template-columns: minmax(0, 1fr) 300px; gap: var(--s6); }
+  .schema-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flow { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .report-layout { grid-template-columns: minmax(0, 1fr) 280px; }
+}
+@media (max-width: 1100px) {
+  :root { --rail: 224px; }
+  .signals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #kpiGrid.hero { grid-template-columns: minmax(0, 1fr); }
+  .kpi--primary { padding: 26px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+  .insights-layout { gap: var(--s6); }
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: minmax(0, 1fr); background: var(--bg); }
+  .mobilebar { position: sticky; top: 0; z-index: var(--z-rail); display: flex; align-items: center; justify-content: space-between;
+    height: 56px; padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--bg-raised); }
+  .mobilebar .brand { padding: 0; gap: 10px; }
+  .mobilebar .brand-mark { width: 30px; height: 30px; }
+  .health-toggle { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border: 1px solid var(--line-2);
+    border-radius: var(--r-pill); background: transparent; font-size: var(--fs-xs); color: var(--ink-2); }
+  .rail { position: fixed; inset: auto 0 0 0; height: auto; flex-direction: row; border-right: 0; border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom); }
+  .rail > .brand, .rail-context { display: none; }
+  .nav { flex-direction: row; width: 100%; gap: 0; padding: 4px; }
+  .nav-btn { flex: 1; flex-direction: column; justify-content: center; gap: 3px; min-width: 0; padding: 8px 2px 7px; font-size: 10.5px; text-align: center; }
+  .nav-btn.active { background: transparent; }
+  .nav-btn.active::before { left: 30%; right: 30%; top: -4px; bottom: auto; width: auto; height: 2px; }
+  .nav-label { display: none; }
+  .nav-short { display: inline; }
+  .nav-meta { display: none; }
+  .nav-new { position: absolute; top: 5px; left: calc(50% + 8px); margin: 0; padding: 0; width: 8px; height: 8px; font-size: 0; }
+  .health { display: none; position: fixed; inset: 56px 0 auto 0; z-index: var(--z-sheet); margin: 0; padding: 16px 20px;
+    border-top: 0; border-bottom: 1px solid var(--line); background: var(--bg-raised); box-shadow: var(--shadow-pop); }
+  body.health-open .health { display: block; animation: rise var(--t-med) var(--ease); }
+  :root { --gutter: 16px; }
+  .main { padding: 0 var(--gutter) calc(86px + env(safe-area-inset-bottom)); }
+  .pagehead { flex-direction: column; align-items: flex-start; gap: var(--s3); padding: 22px 0 16px; margin-bottom: var(--s5); }
+  .dataset-chip { max-width: 100%; }
+  .upload-layout, .report-layout, .insights-layout, .arch-cols { grid-template-columns: minmax(0, 1fr); }
+  .pipeline, .report-rail { position: static; }
+  .report-rail { order: -1; }
+  .analysis, .lower { grid-template-columns: minmax(0, 1fr); }
+  .viz, .lower > section { padding-right: 0; }
+  .viz + .viz, .lower > section + section { padding: var(--s6) 0 0; margin-top: var(--s6); border-left: 0; border-top: 1px solid var(--line); }
+  .ingest { grid-template-columns: minmax(0, 1fr); }
+  .lineage { grid-template-columns: minmax(0, 1fr); }
+  .lin-arrow { justify-self: center; transform: rotate(90deg); }
+  .callout { grid-template-columns: auto minmax(0, 1fr); }
+  .callout .link-btn { grid-column: 2; }
+  .lrow summary { grid-template-columns: 30px minmax(0, 1fr) auto 18px; }
+  .lrow summary .zscale, .lrow summary .lrow-row { display: none; }
+  .lrow-body { padding-left: 4px; }
+  .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .toast { bottom: calc(80px + env(safe-area-inset-bottom)); right: 16px; }
+}
+@media (max-width: 560px) {
+  .dropzone { grid-template-columns: minmax(0, 1fr); padding: 24px 20px; min-height: 0; gap: 14px; }
+  .kpi-support, .kpi-support[data-n="3"], .kpi-support[data-n="5"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi-support[data-n="5"] > .kpi:nth-child(n) { grid-column: auto; }
+  .kpi-support[data-n="3"] > .kpi:last-child, .kpi-support[data-n="5"] > .kpi:last-child { grid-column: 1 / -1; }
+  .kpi-support > .kpi { padding: 16px 14px; }
+  .signals { grid-template-columns: minmax(0, 1fr); }
+  .chart-box { height: 240px; }
+  .fact-grid { grid-template-columns: minmax(0, 1fr); }
+  .tables-list div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .bar-row { grid-template-columns: 84px minmax(0, 1fr) auto; }
+  #reportKpis[data-count="6"], #reportKpis[data-count="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 901px) { .health-toggle { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+  .step[data-state="running"] .step-icon { border-top-color: var(--brand); }
+  .skel { animation: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="app">
+  <header class="mobilebar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><i data-lucide="activity"></i></div>
+      <div class="brand-name">IDAA</div>
+    </div>
+    <button class="health-toggle" id="healthToggle" aria-expanded="false" aria-controls="health">
+      <span class="health-dot" id="healthSummaryDot"></span><span id="healthSummary">Checking</span>
+    </button>
+  </header>
+
+  <aside class="rail" aria-label="Primary">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><i data-lucide="activity"></i></div>
+      <div><div class="brand-name">IDAA</div><div class="brand-sub">Intelligent Data Analytics Agent</div></div>
+    </div>
+    <nav class="nav" aria-label="Sections">
+      <button class="nav-btn active" data-page="upload" aria-current="page"><i data-lucide="upload"></i><span class="nav-label">Upload &amp; analyse</span><span class="nav-short">Upload</span></button>
+      <button class="nav-btn" data-page="dashboard"><i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span><span class="nav-short">Dashboard</span><span class="nav-new hidden" id="navDotDashboard">New</span></button>
+      <button class="nav-btn" data-page="insights"><i data-lucide="sparkles"></i><span class="nav-label">Insights</span><span class="nav-short">Insights</span><span class="nav-meta" id="navMetaInsights"></span></button>
+      <button class="nav-btn" data-page="report"><i data-lucide="file-text"></i><span class="nav-label">PDF report</span><span class="nav-short">Report</span></button>
+      <button class="nav-btn" data-page="architecture"><i data-lucide="workflow"></i><span class="nav-label">Architecture</span><span class="nav-short">System</span></button>
+    </nav>
+    <section class="rail-context hidden" id="railContext" aria-label="Active dataset">
+      <div class="label">Active dataset</div>
+      <div class="ctx-name" id="ctxName"></div>
+      <div class="ctx-meta" id="ctxMeta"></div>
+    </section>
+    <section class="health" id="health" aria-label="System status" aria-live="polite">
+      <div class="health-head"><span class="label">System</span><span class="mono muted" style="font-size:11px" id="healthVersion"></span></div>
+      <div class="health-row"><span class="health-dot" id="healthApiDot"></span><span class="health-name">API</span><span class="health-state" id="healthApi">Checking</span></div>
+      <div class="health-row"><span class="health-dot" id="healthDbDot"></span><span class="health-name">SQL Server</span><span class="health-state" id="healthDb">Checking</span></div>
+      <div class="health-row"><span class="health-dot" id="healthGeminiDot"></span><span class="health-name">Gemini</span><span class="health-state" id="healthGemini">Checking</span></div>
+    </section>
+  </aside>
+
+  <main class="main" id="main">
+    <header class="pagehead">
+      <div><h1 id="pageTitle">Upload &amp; analyse</h1><p id="pageSub">Bring in a CSV. IDAA detects its schema, validates and stores it, then runs the analysis.</p></div>
+      <div class="dataset-chip"><i data-lucide="database"></i><span id="datasetChip">No dataset analysed yet</span></div>
+    </header>
+
+    <!-- ================= UPLOAD ================= -->
+    <section class="page active" id="page-upload" aria-labelledby="pageTitle">
+      <div class="upload-layout">
+        <div>
+          <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-describedby="dropHint">
+            <div class="dz-icon" aria-hidden="true"><i data-lucide="file-up"></i></div>
+            <div>
+              <h2 id="dropTitle">Drop a CSV to analyse</h2>
+              <p id="dropHint">or click to browse. Up to 10 MB, columns in any order.</p>
+              <div class="dz-meta hidden" id="fileMeta"></div>
+            </div>
+            <div class="progress" id="uploadProgress" aria-hidden="true"><div></div></div>
+          </div>
+          <input type="file" id="fileInput" accept=".csv,text/csv" class="hidden">
+
+          <fieldset class="schema-pick">
+            <legend>Dataset type</legend>
+            <div class="schema-options" id="schemaOptions">
+              <div class="schema-option"><input type="radio" name="schema" id="schema-auto" value="auto" checked>
+                <label for="schema-auto"><strong><i data-lucide="scan-search"></i>Auto-detect</strong><span>Match the columns against every schema</span></label></div>
+              <div class="schema-option"><input type="radio" name="schema" id="schema-ecommerce" value="ecommerce">
+                <label for="schema-ecommerce"><strong><i data-lucide="shopping-bag"></i>Ecommerce</strong><span>Orders, customers and products</span></label></div>
+              <div class="schema-option"><input type="radio" name="schema" id="schema-cafe" value="cafe">
+                <label for="schema-cafe"><strong><i data-lucide="coffee"></i>Cafe</strong><span>Item sales by outlet</span></label></div>
+              <div class="schema-option"><input type="radio" name="schema" id="schema-gym" value="gym">
+                <label for="schema-gym"><strong><i data-lucide="dumbbell"></i>Gym</strong><span>Members, fees and attendance</span></label></div>
+            </div>
+            <select id="schemaSelect" class="sr-only" aria-hidden="true" tabindex="-1">
+              <option value="auto" selected>Auto-detect</option>
+              <option value="ecommerce">Ecommerce orders</option>
+              <option value="cafe">Cafe sales</option>
+              <option value="gym">Gym memberships</option>
+            </select>
+          </fieldset>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="startBtn" disabled><i data-lucide="play"></i><span id="startLabel">Analyse dataset</span></button>
+            <button class="btn btn-ghost hidden" id="retryBtn"><i data-lucide="rotate-cw"></i>Retry analysis</button>
+            <span class="hint" id="startHint">Choose a CSV file to begin.</span>
+          </div>
+
+          <div class="alert hidden" id="errorPanel" role="alert">
+            <h3><i data-lucide="octagon-alert"></i><span id="errorTitle">Upload failed</span></h3>
+            <p id="errorMessage"></p>
+            <p class="suggestion hidden" id="errorSuggestion"></p>
+            <div id="errorDetails"></div>
+          </div>
+
+          <div class="done-strip hidden" id="uploadDone" role="status">
+            <i data-lucide="circle-check"></i><p id="uploadDoneText"></p>
+            <button class="btn btn-ghost" id="openDashBtn">Open dashboard</button>
+          </div>
+
+          <div class="ingest hidden" id="uploadSummary">
+            <div class="ingest-block">
+              <h3><i data-lucide="scan-search"></i>Schema</h3>
+              <div class="ingest-lead" id="detectLead"></div>
+              <p id="detectSub"></p>
+              <div class="coverage" id="detectList"></div>
+            </div>
+            <div class="ingest-block">
+              <h3><i data-lucide="sparkle"></i>What IDAA fixed</h3>
+              <dl class="facts-list" id="uploadSummaryList"></dl>
+            </div>
+            <div class="ingest-block hidden" id="mappingBlock">
+              <h3><i data-lucide="arrow-right-left"></i>Column mapping</h3>
+              <div class="chips" id="mappingList"></div>
+            </div>
+            <div class="ingest-block" id="validationBlock">
+              <h3><i data-lucide="shield-check"></i>Validation</h3>
+              <p class="muted" style="font-size:13px" id="validationText"></p>
+              <details class="hidden" id="validationDetails"><summary>Show notes</summary><ul id="validationList"></ul></details>
+            </div>
+          </div>
+        </div>
+
+        <aside class="pipeline" aria-label="Pipeline status">
+          <div class="pipeline-head"><h2>Pipeline</h2><span class="pipe-state" id="pipeState">Idle</span></div>
+          <ol class="steps" id="steps">
+            <li class="step" data-step="upload"><span class="step-icon"></span><div><div class="step-name">Upload file</div><div class="step-detail">Waiting for a file</div></div></li>
+            <li class="step" data-step="validate"><span class="step-icon"></span><div><div class="step-name">Detect, validate &amp; clean</div><div class="step-detail">Not started</div></div></li>
+            <li class="step" data-step="store"><span class="step-icon"></span><div><div class="step-name">Store dataset</div><div class="step-detail">Not started</div></div></li>
+            <li class="step" data-step="analyze"><span class="step-icon"></span><div><div class="step-name">Analytics &amp; anomalies</div><div class="step-detail">Not started</div></div></li>
+            <li class="step" data-step="persist"><span class="step-icon"></span><div><div class="step-name">Narrate &amp; save</div><div class="step-detail">Not started</div></div></li>
+          </ol>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ================= DASHBOARD ================= -->
+    <section class="page" id="page-dashboard" aria-labelledby="pageTitle">
+      <div class="empty" id="dashEmpty">
+        <div class="empty-icon"><i data-lucide="layout-dashboard"></i></div>
+        <h2>No analysis yet</h2>
+        <p>Upload a CSV and the dashboard fills in from the saved analysis.</p>
+        <button class="btn btn-primary" data-go="upload"><i data-lucide="upload"></i>Upload a dataset</button>
+      </div>
+
+      <div class="skel-wrap hidden" id="dashSkeleton" aria-hidden="true">
+        <div class="skel-caption"><span class="spinner" style="color:var(--brand)"></span>Analysing your dataset</div>
+        <div class="skel" style="height:34px;width:42%"></div>
+        <div class="skel" style="height:62px"></div>
+        <div class="skel-row"><div class="skel" style="height:170px"></div><div class="skel" style="height:170px"></div></div>
+        <div class="skel-row"><div class="skel" style="height:260px"></div><div class="skel" style="height:260px"></div></div>
+      </div>
+
+      <div class="hidden" id="dashContent">
+        <div class="identity">
+          <div class="identity-top"><span class="schema-tag" id="dashSchema"></span><span id="dashMeta"></span></div>
+          <h2 class="dataset-name" id="dashName"></h2>
+        </div>
+        <div class="signals" id="dashBanner"></div>
+        <div class="kpis hero" id="kpiGrid"></div>
+
+        <div class="analysis">
+          <figure class="viz">
+            <figcaption class="viz-head"><h3 id="chartATitle"></h3><span class="viz-note" id="chartANote"></span></figcaption>
+            <div class="chart-box"><canvas id="chartA" role="img"></canvas></div>
+          </figure>
+          <figure class="viz">
+            <figcaption class="viz-head"><h3 id="chartBTitle"></h3><span class="viz-note" id="chartBNote"></span></figcaption>
+            <div class="chart-box"><canvas id="chartB" role="img"></canvas></div>
+          </figure>
+        </div>
+
+        <div class="lower">
+          <section aria-labelledby="topTitle">
+            <div class="sec-head"><h3 id="topTitle">Top performers</h3><span class="sec-note" id="topNote"></span></div>
+            <table class="rank"><thead class="sr-only"><tr><th>Rank</th><th>Name</th><th id="topValueHead">Value</th></tr></thead><tbody id="topBody"></tbody></table>
+          </section>
+          <section aria-labelledby="anomTitle">
+            <div class="sec-head"><h3 id="anomTitle">Anomalies</h3><span class="sec-note">|z| above 2.5</span></div>
+            <div id="anomalyList"></div>
+          </section>
+        </div>
+
+        <div class="callout" id="dashCallout">
+          <div class="callout-icon" id="calloutIcon" aria-hidden="true"><i data-lucide="sparkles"></i></div>
+          <div><div class="callout-src" id="calloutSrc"></div><p class="callout-text" id="calloutText"></p></div>
+          <button class="link-btn" data-go="insights">All insights<i data-lucide="arrow-right"></i></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= INSIGHTS ================= -->
+    <section class="page" id="page-insights" aria-labelledby="pageTitle">
+      <div class="empty" id="insightsEmpty">
+        <div class="empty-icon"><i data-lucide="sparkles"></i></div>
+        <h2>No insights yet</h2>
+        <p>Facts, anomalies and narration appear here once an analysis completes.</p>
+        <button class="btn btn-primary" data-go="upload"><i data-lucide="upload"></i>Upload a dataset</button>
+      </div>
+      <div class="hidden" id="insightsContent">
+        <div class="lineage" id="lineage"></div>
+        <div class="insights-layout">
+          <section aria-labelledby="narrTitle">
+            <div class="narr-head"><h2 id="narrTitle">Narration</h2><span class="source-badge" id="narrationBadge"></span></div>
+            <p class="narr-note" id="narrationNote"></p>
+            <ol class="narr-list" id="insightList"></ol>
+          </section>
+          <aside class="facts" aria-labelledby="factsTitle">
+            <h3 id="factsTitle"><i data-lucide="sigma"></i>Computed facts</h3>
+            <dl class="fact-grid" id="factGrid"></dl>
+            <h3 class="sub"><i data-lucide="trophy"></i>Top performers</h3>
+            <dl class="fact-grid" id="performerGrid"></dl>
+            <details class="raw"><summary><i data-lucide="chevron-right"></i>Raw facts sent to the narrator</summary><pre class="json" id="insightJson"></pre></details>
+          </aside>
+        </div>
+        <section class="ledger" id="ledger" aria-labelledby="ledgerTitle">
+          <div class="sec-head"><h3 id="ledgerTitle">Anomaly ledger</h3>
+            <div class="ledger-legend"><span class="sev"><i class="sev-elevated"></i>Elevated, |z| 2.5 to 3</span><span class="sev"><i class="sev-high"></i>High, 3 to 4</span><span class="sev"><i class="sev-extreme"></i>Extreme, above 4</span></div>
+          </div>
+          <div id="ledgerList"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ================= REPORT ================= -->
+    <section class="page" id="page-report" aria-labelledby="pageTitle">
+      <div class="report-layout">
+        <article class="sheet" aria-label="Report preview">
+          <div class="sheet-head">
+            <div><div class="sheet-title">IDAA analysis report</div><div class="sheet-meta" id="reportMeta">Run an analysis to preview the report.</div></div>
+            <span class="label">Preview</span>
+          </div>
+          <h3>Key metrics</h3><div class="kpis" id="reportKpis"></div>
+          <h3>Breakdowns</h3><div id="reportCharts"><p class="muted" style="font-size:13px">No data yet.</p></div>
+          <h3>Narration <span id="reportSource"></span></h3><ul class="doc-list" id="reportInsights"><li class="muted">No narration yet.</li></ul>
+          <h3>Anomalies</h3><ul class="doc-list" id="reportAnomalies"><li class="muted">No anomalies yet.</li></ul>
+        </article>
+        <aside class="report-rail">
+          <div class="gen" id="reportGen" data-state="idle">
+            <div class="gen-state"><i data-lucide="file-clock"></i><span id="reportState">Waiting for an analysis</span></div>
+            <button class="btn btn-primary" id="downloadPdf" disabled><i data-lucide="download"></i>Download PDF</button>
+            <p class="gen-hint" id="reportHint">Run an analysis first.</p>
+          </div>
+          <div>
+            <div class="label" style="margin-bottom:12px">In this report</div>
+            <ul class="contents" id="reportContents"></ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ================= ARCHITECTURE ================= -->
+    <section class="page" id="page-architecture" aria-labelledby="pageTitle">
+      <div class="flow">
+        <div class="stage" style="--tone:var(--brand)"><i data-lucide="upload"></i><h3>Ingest</h3><p>The browser posts the CSV to FastAPI /upload.</p></div>
+        <div class="stage" style="--tone:var(--info)"><i data-lucide="scan-search"></i><h3>Understand</h3><p>Headers are normalised, synonyms mapped and the schema detected.</p></div>
+        <div class="stage" style="--tone:var(--info)"><i data-lucide="shield-check"></i><h3>Validate</h3><p>Values are pre-cleaned, validated and cleaned.</p></div>
+        <div class="stage" style="--tone:var(--ok)"><i data-lucide="database"></i><h3>Store</h3><p>SQL Server IDAA_DB keeps every dataset in its own scope.</p></div>
+        <div class="stage" style="--tone:var(--alert)"><i data-lucide="chart-column"></i><h3>Analyse</h3><p>pandas computes the metrics and flags Z-score anomalies.</p></div>
+        <div class="stage" style="--tone:var(--ai)"><i data-lucide="sparkles"></i><h3>Narrate</h3><p>Gemini rewrites the facts, or a deterministic narration is used.</p></div>
+        <div class="stage" style="--tone:var(--brand)"><i data-lucide="file-text"></i><h3>Deliver</h3><p>The saved result feeds this dashboard and the PDF.</p></div>
+      </div>
+      <div class="arch-cols">
+        <section>
+          <h2>Database</h2>
+          <dl class="tables-list">
+            <div><dt>Dataset</dt><dd>One row per upload, for every schema.</dd></div>
+            <div><dt>DatasetCustomer, DatasetProduct</dt><dd>Customers and products scoped to a single dataset.</dd></div>
+            <div><dt>EcommerceOrder</dt><dd>Order rows. Composite foreign keys keep them inside their own dataset.</dd></div>
+            <div><dt>AnalysisRun</dt><dd>One per analysis, with the full result JSON and the narration source.</dd></div>
+            <div><dt>Anomaly, Insight</dt><dd>The flagged rows and narrated sentences of each run.</dd></div>
+          </dl>
+          <p class="muted" style="font-size:13px;margin-top:16px">Cafe and gym rows stay in the cleaned CSV. Their datasets and runs are stored in SQL Server.</p>
+        </section>
+        <section class="prose">
+          <h2>Facts before narration</h2>
+          <p>Every number is computed by Python. Gemini only rewrites those facts as sentences, and any sentence containing a number that is not in the facts is discarded.</p>
+          <p>Without a Gemini key, IDAA writes a deterministic narration from the same facts and labels it as such.</p>
+          <div class="endpoints">
+            <div class="endpoint"><b>POST</b><span>/upload?schema_type=auto|ecommerce|cafe|gym</span></div>
+            <div class="endpoint"><b>POST</b><span>/analyze/{file_id}</span></div>
+            <div class="endpoint"><b>GET</b><span>/results/{file_id}</span></div>
+            <div class="endpoint"><b>GET</b><span>/report/{file_id}</span></div>
+            <div class="endpoint"><b>GET</b><span>/dataset, /anomalies, /insights/{file_id}</span></div>
+            <div class="endpoint"><b>GET</b><span>/health</span></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Configuration & state
+   ===================================================================== */
+const API_BASE = location.protocol.startsWith('http') ? location.origin : 'http://127.0.0.1:8000';
+const STORAGE_KEY = 'idaa:lastFileId';
+const MAX_BYTES = 10 * 1024 * 1024;               // mirrors MAX_SIZE in app/routes/upload.py
+const Z_THRESHOLD = 2.5;                          // mirrors Z_THRESHOLD in app/services/anomaly.py
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const state = { file: null, upload: null, result: null, busy: false, charts: [], page: 'upload', navEpoch: 0 };
+
+const PAGES = {
+  upload:       ['Upload & analyse', 'Bring in a CSV. IDAA detects its schema, validates and stores it, then runs the analysis.'],
+  dashboard:    ['Dashboard', 'What is happening in the active dataset, read from the saved analysis.'],
+  insights:     ['Insights', 'The computed facts, the anomalies they contain, and the narration built from them.'],
+  report:       ['PDF report', 'The deliverable, generated on the server from the saved analysis.'],
+  architecture: ['Architecture', 'How a CSV travels from the browser to SQL Server and back.'],
+};
+
+const fmt = {
+  money: v => '₹' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 2, minimumFractionDigits: 2 }),
+  count: v => Number(v).toLocaleString('en-IN'),
+  pct:   v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + '%',
+  num:   v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 1 }),
+  days:  v => Number(v).toLocaleString('en-IN', { maximumFractionDigits: 1 }) + ' days',
+  date:  v => {
+    const d = /^\d{4}-\d{2}-\d{2}/.test(String(v)) ? new Date(String(v).slice(0, 10) + 'T00:00:00') : null;
+    return d && !isNaN(d) ? d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : String(v);
+  },
+  text:  v => String(v),
+};
+const compact = (v, money) => (money ? '₹' : '') + Number(v).toLocaleString('en-IN', { notation: 'compact', maximumFractionDigits: 1 });
+const when = iso => { const d = new Date(iso); return isNaN(d) ? null : d.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }); };
+const cap = s => String(s).charAt(0).toUpperCase() + String(s).slice(1);
+
+const topEntry = obj => {
+  const entries = Object.entries(obj || {});
+  if (!entries.length) return null;
+  return entries.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+};
+
+/* Headline context under the primary metric. Derived only from returned metrics. */
+function monthOverMonth(series) {
+  const months = Object.keys(series || {}).sort();
+  if (months.length < 2) return null;
+  const last = months[months.length - 1], prev = months[months.length - 2];
+  if (!series[prev]) return null;
+  return { delta: (series[last] - series[prev]) / series[prev] * 100, text: `${last} vs ${prev}` };
+}
+function leaderShare(series, noun) {
+  const entries = Object.entries(series || {});
+  const total = entries.reduce((s, [, v]) => s + v, 0);
+  const lead = topEntry(series);
+  if (!lead || !total) return null;
+  return { text: `Top ${noun}: ${lead}, ${Math.round(series[lead] / total * 100)}% of revenue` };
+}
+function leaderSignal(series, label, unit) {
+  const entries = Object.entries(series || {});
+  const total = entries.reduce((s, [, v]) => s + v, 0);
+  const lead = topEntry(series);
+  if (!lead || !total) return null;
+  return { icon: 'crown', label, value: `${cap(lead)}, ${Math.round(series[lead] / total * 100)}% of ${unit}` };
+}
+function splitSummary(series) {
+  const entries = Object.entries(series || {}).sort((a, b) => b[1] - a[1]);
+  return entries.length ? { text: entries.map(([k, v]) => `${fmt.count(v)} ${k}`).join(', ') } : null;
+}
+
+/* Per-schema view configuration: only metrics the backend actually returns. */
+const SCHEMA_VIEWS = {
+  ecommerce: {
+    label: 'Ecommerce',
+    icon: 'shopping-bag',
+    kpis: [
+      ['total_revenue', 'Total revenue', 'money'], ['total_orders', 'Orders', 'count'],
+      ['unique_customers', 'Unique customers', 'count'], ['avg_order_value', 'Avg order value', 'money'],
+      ['cancellation_rate_pct', 'Cancellation rate', 'pct'], ['return_rate_pct', 'Return rate', 'pct'],
+    ],
+    note: m => monthOverMonth(m.monthly_revenue),
+    charts: [
+      { key: 'monthly_revenue', title: 'Monthly revenue', type: 'line', money: true, chrono: true },
+      { key: 'revenue_by_category', title: 'Revenue by category', type: 'rank', money: true },
+    ],
+    top: { key: 'top_products', title: 'Top products', head: 'Revenue', kind: 'money' },
+  },
+  cafe: {
+    label: 'Cafe',
+    icon: 'coffee',
+    kpis: [
+      ['total_revenue', 'Total revenue', 'money'], ['busiest_day', 'Busiest day', 'date'],
+      [m => topEntry(m.top_items), 'Best-selling item', 'text'],
+      [m => topEntry(m.revenue_by_payment_method), 'Top payment method', 'text'],
+    ],
+    note: m => leaderShare(m.revenue_by_category, 'category'),
+    signal: m => leaderSignal(m.revenue_by_payment_method, 'Payment mix', 'revenue'),
+    charts: [
+      { key: 'revenue_by_category', title: 'Revenue by category', type: 'rank', money: true },
+      { key: 'top_items', title: 'Top items by revenue', type: 'rank', money: true },
+    ],
+    top: { key: 'top_items', title: 'Top items', head: 'Revenue', kind: 'money' },
+  },
+  gym: {
+    label: 'Gym',
+    icon: 'dumbbell',
+    kpis: [
+      ['total_members', 'Members', 'count'], ['total_revenue', 'Monthly fees', 'money'],
+      ['avg_age', 'Average age', 'num'], ['avg_attendance_days', 'Avg attendance', 'days'],
+    ],
+    note: m => splitSummary(m.payment_status_split),
+    signal: m => leaderSignal(m.membership_split, 'Leading plan', 'members'),
+    charts: [
+      { key: 'membership_split', title: 'Members by membership type', type: 'split' },
+      { key: 'payment_status_split', title: 'Members by payment status', type: 'split', tones: { paid: 'ok', pending: 'warn', overdue: 'alert' } },
+    ],
+    top: { key: 'membership_split', title: 'Membership types', head: 'Members', kind: 'count' },
+  },
+};
+
+/* =====================================================================
+   DOM helpers (all dynamic text goes through textContent)
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+function el(tag, props = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (v === undefined || v === null) continue;
+    if (k === 'class') node.className = v;
+    else if (k === 'text') node.textContent = v;
+    else node.setAttribute(k, v);
+  }
+  for (const c of children.flat()) if (c != null) node.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  return node;
+}
+const icon = name => el('i', { 'data-lucide': name, 'aria-hidden': 'true' });
+function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); return node; }
+function icons() { if (window.lucide) window.lucide.createIcons(); }
+function show(id, on) { $(id).classList.toggle('hidden', !on); }
+
+let toastTimer;
+function toast(msg, kind = 'ok') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = `toast show ${kind}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, 4000);
+}
+
+function formatValue(value, kind) {
+  if (value === null || value === undefined || value === '' || (typeof value === 'number' && !isFinite(value))) return null;
+  return (fmt[kind] || fmt.text)(value);
+}
+
+const NUM_RE = /₹\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?%|\b\d[\d,]*(?:\.\d+)?\b/g;
+function highlightNumbers(text) {
+  const frag = document.createDocumentFragment();
+  let last = 0;
+  for (const m of String(text).matchAll(NUM_RE)) {
+    if (m.index > last) frag.append(text.slice(last, m.index));
+    frag.append(el('span', { class: 'hl', text: m[0] }));
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) frag.append(text.slice(last));
+  return frag;
+}
+
+/* =====================================================================
+   Navigation
+   ===================================================================== */
+function go(page, focusId) {
+  state.page = page;
+  state.navEpoch += 1;
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === `page-${page}`));
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    const on = b.dataset.page === page;
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+  const [title, sub] = PAGES[page];
+  $('pageTitle').textContent = title;
+  $('pageSub').textContent = sub;
+  if (page === 'dashboard') $('navDotDashboard').classList.add('hidden');
+  document.body.classList.remove('health-open');
+  $('healthToggle').setAttribute('aria-expanded', 'false');
+  if (focusId && $(focusId)) $(focusId).scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+  else window.scrollTo({ top: 0 });
+}
+document.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', () => go(b.dataset.page)));
+document.addEventListener('click', e => {
+  const target = e.target.closest('[data-go]');
+  if (target) go(target.dataset.go, target.dataset.focus);
+});
+
+/* =====================================================================
+   System status
+   ===================================================================== */
+function setStatus(id, text, level, title) {
+  $(id).textContent = text;
+  $(id + 'Dot').className = 'health-dot ' + (level || '');
+  const row = $(id).closest('.health-row');
+  row.dataset.level = level || '';
+  if (title) row.title = title; else row.removeAttribute('title');
+}
+function summariseHealth(levels) {
+  const bad = levels.filter(l => l === 'bad').length;
+  const warn = levels.filter(l => l === 'warn').length;
+  $('healthSummary').textContent = bad ? `${bad} offline` : warn ? 'Degraded' : 'Systems online';
+  $('healthSummaryDot').className = 'health-dot ' + (bad ? 'bad' : warn ? 'warn' : 'ok');
+}
+async function loadHealth() {
+  try {
+    const res = await fetch(`${API_BASE}/health`);
+    const h = await res.json();
+    $('healthVersion').textContent = h.version ? `v${h.version}` : '';
+    setStatus('healthApi', 'Online', 'ok', `API reachable at ${API_BASE}`);
+    let db = 'ok';
+    if (!h.db_configured) { db = 'warn'; setStatus('healthDb', 'File-only', 'warn', 'DATABASE_URL is not set, results are kept on disk'); }
+    else if (h.db_connected) setStatus('healthDb', 'Connected', 'ok');
+    else { db = 'bad'; setStatus('healthDb', 'Unreachable', 'bad', 'SQL Server did not answer SELECT 1'); }
+    if (h.gemini_configured) setStatus('healthGemini', 'Configured', 'ok');
+    else setStatus('healthGemini', 'Not configured', '', 'Narration uses the deterministic fallback');
+    summariseHealth(['ok', db]);
+  } catch (e) {
+    setStatus('healthApi', 'Offline', 'bad', `No response from ${API_BASE}`);
+    setStatus('healthDb', 'Unknown', '');
+    setStatus('healthGemini', 'Unknown', '');
+    summariseHealth(['bad']);
+  }
+}
+
+/* =====================================================================
+   Pipeline steps: driven only by real API responses
+   ===================================================================== */
+function setStep(name, stateName, detail) {
+  const step = document.querySelector(`.step[data-step="${name}"]`);
+  step.dataset.state = stateName;
+  if (detail !== undefined) step.querySelector('.step-detail').textContent = detail;
+}
+function resetSteps() {
+  ['upload', 'validate', 'store', 'analyze', 'persist'].forEach(s => setStep(s, '', 'Not started'));
+}
+function setPipe(text, tone) { $('pipeState').textContent = text; $('pipeState').dataset.tone = tone || ''; }
+function setProgress(pct) { $('uploadProgress').firstElementChild.style.width = `${pct}%`; }
+
+/* =====================================================================
+   Error panel
+   ===================================================================== */
+function hideError() { $('errorPanel').classList.add('hidden'); }
+function table(headers, rows) {
+  return el('div', { class: 'table-wrap' }, el('table', { class: 'table' },
+    el('thead', {}, el('tr', {}, headers.map(h => el('th', { text: h })))),
+    el('tbody', {}, rows)));
+}
+function showError(title, message, detail) {
+  $('errorTitle').textContent = title;
+  $('errorMessage').textContent = message;
+  const sug = $('errorSuggestion');
+  sug.classList.toggle('hidden', !(detail && detail.suggestion));
+  sug.textContent = (detail && detail.suggestion) || '';
+  const box = clear($('errorDetails'));
+
+  if (detail && Array.isArray(detail.missing_required) && detail.missing_required.length) {
+    box.append(el('p', { text: 'Missing required columns: ' + detail.missing_required.join(', ') }));
+  }
+  if (detail && detail.detection && Array.isArray(detail.detection.candidates)) {
+    box.append(table(['Schema', 'Required columns found', 'Missing'], detail.detection.candidates.map(c => el('tr', {},
+      el('td', { text: c.schema_type }), el('td', { text: `${Math.round(c.coverage * 100)}%` }),
+      el('td', { text: (c.missing_required || []).join(', ') || 'None' })))));
+  }
+  if (detail && Array.isArray(detail.errors) && detail.errors.length) {
+    box.append(table(['Column', 'Rule', 'Problem'], detail.errors.slice(0, 25).map(e => el('tr', {},
+      el('td', { text: e.column }), el('td', { text: e.rule }), el('td', { text: e.message })))));
+    if (detail.errors.length > 25) box.append(el('p', { class: 'muted', text: `${detail.errors.length - 25} more not shown` }));
+  }
+  const mappingWarnings = ((detail && detail.warnings) || []).filter(w => w.rule === 'column_mapping');
+  if (mappingWarnings.length) box.append(el('ul', {}, mappingWarnings.map(w => el('li', { text: w.message }))));
+  $('errorPanel').classList.remove('hidden');
+  icons();
+}
+
+function errorFromResponse(status, body) {
+  const detail = body && body.detail;
+  if (typeof detail === 'string') return { title: `Request failed (${status})`, message: detail, detail: null };
+  if (detail && typeof detail === 'object') {
+    const title = status === 422 ? 'Unsupported dataset' : 'The file did not pass validation';
+    return { title, message: detail.message || 'See the details below.', detail };
+  }
+  return { title: `Request failed (${status})`, message: 'The server returned an unexpected response.', detail: null };
+}
+
+/* =====================================================================
+   Schema choice (radio cards mirror the select, which is the source of truth)
+   ===================================================================== */
+function syncSchemaRadios() {
+  const value = $('schemaSelect').value;
+  document.querySelectorAll('input[name="schema"]').forEach(r => { r.checked = r.value === value; });
+  updateStartHint();
+}
+document.querySelectorAll('input[name="schema"]').forEach(r => r.addEventListener('change', () => {
+  $('schemaSelect').value = r.value;
+  updateStartHint();
+}));
+function updateStartHint() {
+  if (state.busy) return;
+  const v = $('schemaSelect').value;
+  $('startHint').textContent = !state.file ? 'Choose a CSV file to begin.'
+    : v === 'auto' ? 'IDAA will detect the dataset type.' : `Validating as ${SCHEMA_VIEWS[v].label.toLowerCase()} data.`;
+}
+
+/* =====================================================================
+   Upload (XHR for real progress) and analysis
+   ===================================================================== */
+function uploadFile(file, schema) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}/upload?schema_type=${encodeURIComponent(schema)}`);
+    xhr.responseType = 'json';
+    xhr.upload.onprogress = e => {
+      if (!e.lengthComputable) return;
+      const pct = Math.round((e.loaded / e.total) * 100);
+      setProgress(pct);
+      setStep('upload', 'running', `Sending ${pct}%`);
+    };
+    xhr.upload.onload = () => setStep('upload', 'done', `${file.name} sent (${(file.size / 1024).toFixed(1)} KB)`);
+    xhr.onload = () => resolve({ status: xhr.status, body: xhr.response });
+    xhr.onerror = () => reject(new Error('network'));
+    const form = new FormData();
+    form.append('file', file);
+    xhr.send(form);
+  });
+}
+
+function setBusy(busy) {
+  state.busy = busy;
+  $('startBtn').disabled = busy || !state.file;
+  $('retryBtn').disabled = busy;
+  $('schemaSelect').disabled = busy;
+  document.querySelectorAll('input[name="schema"]').forEach(r => { r.disabled = busy; });
+  $('downloadPdf').disabled = busy || !state.result;
+  const btn = $('startBtn');
+  const first = btn.firstElementChild;
+  if (busy && !btn.querySelector('.spinner')) btn.insertBefore(el('span', { class: 'spinner', 'aria-hidden': 'true' }), first);
+  if (!busy) btn.querySelectorAll('.spinner').forEach(s => s.remove());
+  btn.querySelectorAll('svg, i').forEach(i => i.classList.toggle('hidden', busy));
+  $('startLabel').textContent = busy ? 'Analysing' : 'Analyse dataset';
+  if (busy) $('startHint').textContent = 'Working. You can watch each step in the pipeline.';
+  else updateStartHint();
+  show('dashSkeleton', busy && !state.result);
+  show('dashEmpty', !busy && !state.result);
+}
+
+function chooseFile(file) {
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.csv')) { toast('Only .csv files are supported', 'err'); return; }
+  if (file.size > MAX_BYTES) { toast('That file is larger than 10 MB', 'err'); return; }
+  state.file = file;
+  $('dropTitle').textContent = file.name;
+  $('dropHint').textContent = 'Ready. Click to choose a different file.';
+  const meta = clear($('fileMeta'));
+  meta.append(el('span', {}, icon('file-spreadsheet'), `${(file.size / 1024).toFixed(1)} KB`));
+  if (file.lastModified) meta.append(el('span', {}, icon('clock'), new Date(file.lastModified).toLocaleDateString('en-IN', { dateStyle: 'medium' })));
+  meta.classList.remove('hidden');
+  $('dropzone').classList.add('has-file');
+  setProgress(0);
+  resetSteps();
+  setStep('upload', '', 'Ready to upload');
+  setPipe('Ready', '');
+  hideError();
+  $('startBtn').disabled = state.busy;
+  updateStartHint();
+  icons();
+}
+
+function resetResultViews() {
+  state.result = null;
+  destroyCharts();
+  $('dashContent').classList.add('hidden');
+  $('insightsContent').classList.add('hidden'); $('insightsEmpty').classList.remove('hidden');
+  $('railContext').classList.add('hidden');
+  $('navMetaInsights').textContent = '';
+  $('datasetChip').textContent = 'No dataset analysed yet';
+  resetReport();
+}
+
+async function startPipeline() {
+  if (!state.file || state.busy) return;
+  syncSchemaRadios();
+  setBusy(true);
+  hideError();
+  resetSteps();
+  resetResultViews();
+  setBusy(true);
+  ['uploadSummary', 'uploadDone', 'retryBtn'].forEach(id => show(id, false));
+  setPipe('Running', 'run');
+  setStep('upload', 'running', 'Uploading');
+  setStep('validate', 'running', 'Waiting for the server');
+
+  let res;
+  try {
+    res = await uploadFile(state.file, $('schemaSelect').value);
+  } catch (e) {
+    setStep('upload', 'error', `Could not reach ${API_BASE}`);
+    setStep('validate', '', 'Not started');
+    failPipeline('Network error', `The API at ${API_BASE} is not reachable. Is the backend running?`, null);
+    return;
+  }
+
+  if (res.status !== 200) {
+    const err = errorFromResponse(res.status, res.body);
+    setStep('validate', 'error', err.message);
+    failPipeline(err.title, err.message, err.detail);
+    return;
+  }
+
+  const up = res.body;
+  state.upload = up;
+  renderUploadSummary(up);
+  const renames = Object.keys(up.column_mapping || {}).length;
+  const det = up.schema_detection ? `Detected ${up.schema_type}` : `Validated as ${up.schema_type}`;
+  setStep('validate', 'done', `${det}, ${up.rows.toLocaleString('en-IN')} rows kept` + (renames ? `, ${renames} column${renames === 1 ? '' : 's'} renamed` : ''));
+  setStep('store', 'done', up.db_scope === 'full' ? `SQL Server dataset #${up.dataset_id} with all rows`
+    : up.db_scope === 'metadata' ? `SQL Server dataset #${up.dataset_id}, rows kept in the cleaned CSV`
+    : 'File-only mode, SQL Server not configured');
+  if (!up.db_persisted) setStep('store', 'skipped');
+  await runAnalysis(up.file_id);
+}
+
+function failPipeline(title, message, detail, retry) {
+  setPipe('Failed', 'bad');
+  showError(title, message, detail);
+  if (retry) $('retryBtn').classList.remove('hidden');
+  setBusy(false);
+  if (state.page !== 'upload') go('upload');
+}
+
+async function runAnalysis(fileId) {
+  setBusy(true);
+  setPipe('Running', 'run');
+  setStep('analyze', 'running', 'Running analytics and anomaly detection');
+  setStep('persist', '', 'Not started');
+  let res, body;
+  try {
+    res = await fetch(`${API_BASE}/analyze/${encodeURIComponent(fileId)}`, { method: 'POST' });
+    body = await res.json().catch(() => null);
+  } catch (e) {
+    setStep('analyze', 'error', 'Network error during analysis');
+    failPipeline('Network error', 'The analysis request did not reach the server.', null, true);
+    return;
+  }
+  if (!res.ok) {
+    const err = errorFromResponse(res.status, body);
+    setStep('analyze', 'error', err.message);
+    failPipeline('Analysis failed', err.message, err.detail, true);
+    return;
+  }
+  const n = body.anomalies.length;
+  setStep('analyze', 'done', `Read from ${body.data_source === 'sql_server' ? 'SQL Server' : 'the cleaned CSV'}, ${n} anomal${n === 1 ? 'y' : 'ies'} flagged`);
+  const p = body.db_persistence || {};
+  const narr = body.narration_source === 'gemini' ? 'Gemini narration' : 'Deterministic narration';
+  if (p.status === 'saved') setStep('persist', 'done', `${narr}, saved as run #${p.run_id}`);
+  else if (p.status === 'failed') setStep('persist', 'error', `${narr}. Saving to SQL Server failed, the result is kept on disk`);
+  else setStep('persist', 'done', `${narr}, saved on disk (file-only mode)`);
+  setPipe(p.status === 'failed' ? 'Partly saved' : 'Complete', p.status === 'failed' ? 'bad' : 'ok');
+
+  $('uploadDoneText').textContent = p.status === 'saved'
+    ? `Analysis complete and saved as run #${p.run_id}.` : 'Analysis complete.';
+  show('uploadDone', true);
+  try { localStorage.setItem(STORAGE_KEY, fileId); } catch (e) { /* storage unavailable */ }
+  setBusy(false);
+  showResult(body);
+  toast('Analysis complete. Dashboard updated.');
+  go('dashboard');
+}
+
+function renderUploadSummary(up) {
+  const det = up.schema_detection;
+  const view = SCHEMA_VIEWS[up.schema_type];
+  $('detectLead').textContent = view ? view.label : up.schema_type;
+  const cov = clear($('detectList'));
+  if (det && Array.isArray(det.candidates)) {
+    const win = det.candidates.find(c => c.schema_type === up.schema_type);
+    $('detectSub').textContent = win
+      ? `Auto-detected. ${win.required_matched} of ${win.required_total} required columns, ${win.optional_matched} optional.`
+      : 'Auto-detected.';
+    [...det.candidates].sort((a, b) => b.coverage - a.coverage).forEach(c => cov.append(
+      el('div', { class: 'cov-row' + (c.schema_type === up.schema_type ? ' win' : '') },
+        el('span', { class: 'cov-name', text: c.schema_type }),
+        el('span', {}, el('div', { class: 'cov-bar', style: `width:${Math.max(2, Math.round(c.coverage * 100))}%` })),
+        el('span', { class: 'cov-val', text: `${c.required_matched}/${c.required_total}` }))));
+  } else {
+    $('detectSub').textContent = 'Chosen manually and validated against that schema.';
+  }
+
+  const list = clear($('uploadSummaryList'));
+  const add = (k, v) => list.append(el('dt', { text: k }), el('dd', { text: v }));
+  add('Rows kept', `${up.rows.toLocaleString('en-IN')} of ${up.cleaning.rows_before.toLocaleString('en-IN')}`);
+  const pc = up.pre_cleaning || {};
+  const sum = obj => Object.values(obj || {}).reduce((a, b) => a + b, 0);
+  add('Duplicate rows removed', String((pc.duplicate_rows_removed || 0) + (up.cleaning.duplicates_removed || 0)));
+  add('Formatted numbers fixed', String(sum(pc.numeric_values_cleaned)));
+  add('Category values normalised', String(sum(pc.categorical_values_normalized)));
+  add('Unreadable rows dropped', String(up.cleaning.invalid_rows_removed || 0));
+  add('Stored in', up.db_scope === 'full' ? 'SQL Server, all rows' : up.db_scope === 'metadata' ? 'SQL Server, metadata' : 'Local file');
+
+  const mapping = Object.entries(up.column_mapping || {});
+  const chips = clear($('mappingList'));
+  mapping.forEach(([a, b]) => chips.append(el('span', { class: 'chip' }, a, ' → ', el('b', { text: b }))));
+  show('mappingBlock', mapping.length > 0);
+
+  const notes = (up.warnings || []).filter(w => w.rule !== 'config');
+  $('validationText').textContent = notes.length
+    ? `Passed with ${notes.length} note${notes.length === 1 ? '' : 's'}. Nothing blocked the upload.`
+    : 'Passed every structural, type and value check.';
+  clear($('validationList')).append(...notes.map(w => el('li', { text: w.message })));
+  show('validationDetails', notes.length > 0);
+  show('uploadSummary', true);
+  icons();
+}
+
+/* =====================================================================
+   Charts: one coordinated palette, semantic where the data has meaning
+   ===================================================================== */
+const TOKENS = {};
+function readTokens() {
+  const cs = getComputedStyle(document.documentElement);
+  ['--brand', '--info', '--ai', '--alert', '--alert-strong', '--ok', '--warn', '--data-blue', '--ink', '--ink-2', '--ink-3', '--line', '--bg', '--surface-2', '--line-2']
+    .forEach(t => { TOKENS[t.slice(2)] = cs.getPropertyValue(t).trim(); });
+}
+const alpha = (hex, a) => {
+  const n = parseInt(hex.replace('#', ''), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+};
+function configureChartDefaults() {
+  if (!window.Chart) return;
+  Chart.defaults.font.family = "'Geist', system-ui, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = TOKENS['ink-3'];
+  Object.assign(Chart.defaults.plugins.tooltip, {
+    backgroundColor: TOKENS['surface-2'], borderColor: TOKENS['line-2'], borderWidth: 1, titleColor: TOKENS.ink,
+    bodyColor: TOKENS['ink-2'], padding: 10, cornerRadius: 6, displayColors: false, titleFont: { weight: '600' },
+  });
+}
+
+function destroyCharts() {
+  state.charts.forEach(c => c.destroy());
+  state.charts = [];
+  ['chartATitle', 'chartBTitle', 'chartANote', 'chartBNote'].forEach(id => { $(id).textContent = ''; });
+}
+
+function makeChart(canvas, titleEl, noteEl, spec, metrics) {
+  const data = metrics[spec.key] || {};
+  let entries = Object.entries(data);
+  titleEl.textContent = spec.title;
+  if (!entries.length || !window.Chart) {
+    noteEl.textContent = window.Chart ? 'No data' : 'Charts unavailable offline';
+    canvas.setAttribute('aria-label', `${spec.title}: no chart available`);
+    return null;
+  }
+  entries = spec.chrono ? entries.sort((a, b) => a[0].localeCompare(b[0])) : entries.sort((a, b) => b[1] - a[1]);
+  const labels = entries.map(e => e[0]);
+  const values = entries.map(e => e[1]);
+  const valueText = v => (spec.money ? fmt.money(v) : fmt.count(v));
+  const animation = reducedMotion() ? false : { duration: 520, easing: 'easeOutQuart' };
+  const hairline = 'rgba(255,255,255,0.06)';
+  let config;
+
+  if (spec.type === 'line') {
+    const peak = labels[values.indexOf(Math.max(...values))];
+    noteEl.textContent = `Peak ${peak}`;
+    canvas.setAttribute('aria-label', `${spec.title}, ${labels.length} months from ${labels[0]} to ${labels[labels.length - 1]}, peak ${peak} at ${valueText(data[peak])}`);
+    config = {
+      type: 'line',
+      data: { labels, datasets: [{
+        data: values, borderColor: TOKENS.brand, borderWidth: 2, tension: .32, fill: true,
+        backgroundColor: c => {
+          const { ctx, chartArea } = c.chart;
+          if (!chartArea) return 'transparent';
+          const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          g.addColorStop(0, alpha(TOKENS.brand, .2)); g.addColorStop(1, alpha(TOKENS.brand, 0));
+          return g;
+        },
+        pointRadius: values.map((_, i) => (i === values.length - 1 ? 4 : 0)),
+        pointBackgroundColor: TOKENS.brand, pointBorderColor: TOKENS.bg, pointBorderWidth: 2,
+        pointHoverRadius: 6, pointHoverBackgroundColor: TOKENS.brand,
+      }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + valueText(ctx.parsed.y) } } },
+        scales: {
+          x: { grid: { display: false }, border: { color: TOKENS.line }, ticks: { color: TOKENS['ink-3'] } },
+          y: { beginAtZero: true, grid: { color: hairline }, border: { display: false },
+               ticks: { color: TOKENS['ink-3'], maxTicksLimit: 5, callback: v => compact(v, spec.money) } },
+        },
+      },
+    };
+  } else if (spec.type === 'rank') {
+    noteEl.textContent = `${labels.length} ${labels.length === 1 ? 'entry' : 'entries'}`;
+    canvas.setAttribute('aria-label', `${spec.title}, ranked. Highest: ${labels[0]} at ${valueText(values[0])}`);
+    config = {
+      type: 'bar',
+      data: { labels, datasets: [{
+        data: values, borderRadius: 3, borderSkipped: false, maxBarThickness: 16,
+        backgroundColor: values.map((_, i) => (i === 0 ? TOKENS.info : alpha(TOKENS['data-blue'], .55))),
+        hoverBackgroundColor: values.map((_, i) => (i === 0 ? TOKENS.info : TOKENS['data-blue'])),
+      }] },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + valueText(ctx.parsed.x) } } },
+        scales: {
+          x: { beginAtZero: true, grid: { color: hairline }, border: { display: false },
+               ticks: { color: TOKENS['ink-3'], maxTicksLimit: 4, callback: v => compact(v, spec.money) } },
+          y: { grid: { display: false }, border: { color: TOKENS.line }, ticks: { color: TOKENS['ink-2'], autoSkip: false } },
+        },
+      },
+    };
+  } else {
+    const ramp = [TOKENS.info, TOKENS['data-blue'], TOKENS.ai, TOKENS.brand, TOKENS.ok, TOKENS.warn];
+    const colors = labels.map((l, i) => (spec.tones && spec.tones[l] ? TOKENS[spec.tones[l]] : ramp[i % ramp.length]));
+    const total = values.reduce((a, b) => a + b, 0);
+    noteEl.textContent = `Total ${fmt.count(total)}`;
+    canvas.setAttribute('aria-label', `${spec.title}: ` + labels.map((l, i) => `${l} ${fmt.count(values[i])}`).join(', '));
+    config = {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: TOKENS.bg, borderWidth: 3, hoverOffset: 6 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation, cutout: '70%',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: TOKENS['ink-2'], usePointStyle: true, pointStyle: 'circle', boxWidth: 8, padding: 16 } },
+          tooltip: { callbacks: { label: ctx => ` ${fmt.count(ctx.parsed)} (${Math.round(ctx.parsed / total * 100)}%)` } },
+        },
+      },
+    };
+  }
+  return new Chart(canvas.getContext('2d'), config);
+}
+
+/* =====================================================================
+   Result rendering
+   ===================================================================== */
+function kpiValue(metrics, key) { return typeof key === 'function' ? key(metrics) : metrics[key]; }
+
+function kpiNode(metrics, [key, label, kind], cls) {
+  const text = formatValue(kpiValue(metrics, key), kind);
+  return el('div', { class: 'kpi' + (cls ? ' ' + cls : ''), 'data-kpi': typeof key === 'string' ? key : label },
+    el('div', { class: 'kpi-label', text: label }),
+    el('div', { class: 'kpi-value' + (text === null ? ' na' : ''), text: text === null ? 'N/A' : text }));
+}
+
+function renderKpis(container, view, metrics, hero) {
+  clear(container);
+  container.dataset.count = String(view.kpis.length);
+  const make = (spec, cls) => kpiNode(metrics, spec, cls);
+  if (!hero) { view.kpis.forEach(k => container.append(make(k))); return; }
+  const [first, ...rest] = view.kpis;
+  const primary = make(first, 'kpi--primary reveal');
+  const note = view.note && view.note(metrics);
+  if (note) {
+    const line = el('div', { class: 'kpi-note' });
+    if (typeof note.delta === 'number') {
+      const d = note.delta;
+      line.append(el('span', { class: 'delta ' + (d > 0.05 ? 'up' : d < -0.05 ? 'down' : 'flat'),
+        text: `${d > 0 ? '+' : ''}${d.toLocaleString('en-IN', { maximumFractionDigits: 1 })}%` }));
+    }
+    line.append(el('span', { text: note.text }));
+    primary.append(line);
+  }
+  const support = el('div', { class: 'kpi-support', 'data-n': String(rest.length) });
+  rest.forEach((k, i) => { const n = make(k, 'reveal'); n.style.setProperty('--i', i + 1); support.append(n); });
+  container.append(primary, support);
+}
+
+function persistenceSignal(result) {
+  const p = result.db_persistence || {};
+  if (p.status === 'saved') return ['ok', 'database', `Run #${p.run_id} in SQL Server`];
+  if (p.status === 'failed') return ['alert', 'database-zap', 'Not saved to SQL Server'];
+  if (result.result_source === 'database') return ['ok', 'database', 'Loaded from SQL Server'];
+  return ['warn', 'hard-drive', 'On disk, file-only mode'];
+}
+
+const TREND_TEXT = {
+  up: ['ok', 'trending-up', 'Last month up over 5%'],
+  down: ['alert', 'trending-down', 'Last month down over 5%'],
+  stable: ['info', 'move-right', 'Last month within 5%'],
+};
+
+function renderSignals(result) {
+  const box = clear($('dashBanner'));
+  const ins = result.insights || {};
+  const view = SCHEMA_VIEWS[result.schema_type];
+  const alt = !TREND_TEXT[ins.trend_direction] && view && view.signal ? view.signal(result.analytics.metrics || {}) : null;
+  const trend = TREND_TEXT[ins.trend_direction] || ['', 'minus', 'Needs a monthly series'];
+  const n = (result.anomalies || []).length;
+  const gem = result.narration_source === 'gemini';
+  const [pTone, pIcon, pValue] = persistenceSignal(result);
+  const signal = (tag, tone, ic, label, value, attrs = {}) => el(tag, { class: 'signal reveal', 'data-tone': tone, ...attrs },
+    el('span', { class: 'signal-icon' }, icon(ic)),
+    el('span', { class: 'signal-body' }, el('div', { class: 'signal-label', text: label }), el('div', { class: 'signal-value', text: value })),
+    tag === 'button' ? el('span', { class: 'signal-go' }, icon('arrow-right')) : null);
+  box.append(
+    alt ? signal('div', 'info', alt.icon, alt.label, alt.value) : signal('div', trend[0], trend[1], 'Revenue trend', trend[2]),
+    signal('button', n ? 'alert' : 'ok', n ? 'triangle-alert' : 'shield-check', 'Anomalies', n ? `${n} flagged` : 'None flagged',
+      { 'data-go': 'insights', 'data-focus': 'ledger', type: 'button' }),
+    signal('button', gem ? 'ai' : 'info', gem ? 'sparkles' : 'list-checks', 'Narration', gem ? 'Gemini, fact-checked' : 'Deterministic',
+      { 'data-go': 'insights', type: 'button' }),
+    signal('div', pTone, pIcon, 'Storage', pValue));
+  [...box.children].forEach((c, i) => c.style.setProperty('--i', i));
+}
+
+function severity(z) {
+  const a = Math.abs(z);
+  return a > 4 ? ['extreme', 'Extreme', TOKENS['alert-strong']] : a > 3 ? ['high', 'High', TOKENS.alert] : ['elevated', 'Elevated', TOKENS.warn];
+}
+const byMagnitude = list => [...(list || [])].sort((a, b) => Math.abs(b.z_score) - Math.abs(a.z_score));
+const anomalyTitle = a => `${a.type === 'spike' ? 'Spike' : 'Drop'} in ${a.column}`;
+
+function renderDashboard(result) {
+  const view = SCHEMA_VIEWS[result.schema_type];
+  const metrics = result.analytics.metrics || {};
+  const tag = clear($('dashSchema'));
+  tag.append(icon(view ? view.icon : 'table'), view ? view.label : result.schema_type);
+  const computed = when(result.analytics.computed_at);
+  $('dashMeta').textContent = [computed ? `Analysed ${computed}` : null,
+    result.data_source === 'sql_server' ? 'from SQL Server' : 'from the cleaned CSV'].filter(Boolean).join(' · ');
+  $('dashName').textContent = result.filename || 'Unnamed dataset';
+  renderSignals(result);
+
+  destroyCharts();
+  if (!view) {   // unknown schema: show scalar metrics generically
+    const grid = clear($('kpiGrid'));
+    grid.className = 'kpis';
+    grid.removeAttribute('data-count');
+    Object.entries(metrics).filter(([, v]) => typeof v !== 'object').forEach(([k, v]) =>
+      grid.append(el('div', { class: 'kpi' }, el('div', { class: 'kpi-label', text: k }), el('div', { class: 'kpi-value', text: String(v) }))));
+  } else {
+    $('kpiGrid').className = 'kpis hero';
+    renderKpis($('kpiGrid'), view, metrics, true);
+    [['chartA', 'chartATitle', 'chartANote'], ['chartB', 'chartBTitle', 'chartBNote']].forEach(([cid, tid, nid], i) => {
+      const chart = makeChart($(cid), $(tid), $(nid), view.charts[i], metrics);
+      if (chart) state.charts.push(chart);
+    });
+
+    $('topTitle').textContent = view.top.title;
+    $('topValueHead').textContent = view.top.head;
+    const body = clear($('topBody'));
+    const top = Object.entries(metrics[view.top.key] || {}).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const max = top.length ? top[0][1] : 0;
+    $('topNote').textContent = top.length ? `by ${view.top.head.toLowerCase()}` : '';
+    if (!top.length) body.append(el('tr', {}, el('td', { colspan: '3', class: 'muted', text: 'No data' })));
+    top.forEach(([name, v], i) => body.append(el('tr', {},
+      el('td', { class: 'r-n', text: String(i + 1).padStart(2, '0') }),
+      el('td', { class: 'r-name' }, name, el('div', { class: 'r-bar', style: `width:${max > 0 ? Math.max(2, v / max * 100) : 0}%` })),
+      el('td', { class: 'r-val', text: formatValue(v, view.top.kind) || 'N/A' }))));
+  }
+
+  const list = clear($('anomalyList'));
+  const anomalies = byMagnitude(result.anomalies);
+  if (!anomalies.length) list.append(el('div', { class: 'anom clear' }, el('span', { class: 'anom-dir' }, icon('shield-check')),
+    el('div', {}, el('div', { class: 'anom-title', text: 'No anomalies detected' }),
+      el('div', { class: 'anom-meta', text: `No value is more than ${Z_THRESHOLD} standard deviations from its column mean` }))));
+  anomalies.slice(0, 4).forEach(a => list.append(el('div', { class: 'anom' },
+    el('span', { class: 'anom-dir' }, icon(a.type === 'spike' ? 'arrow-up-right' : 'arrow-down-right')),
+    el('div', {}, el('div', { class: 'anom-title', text: `${anomalyTitle(a)}: ${Number(a.value).toLocaleString('en-IN')}` }),
+      el('div', { class: 'anom-meta', text: `row ${a.row_index}` })),
+    el('span', { class: 'zpill', text: `z ${a.z_score}` }))));
+  if (anomalies.length > 4) list.append(el('div', { class: 'anom-more' },
+    el('button', { class: 'link-btn', 'data-go': 'insights', 'data-focus': 'ledger', type: 'button' }, `All ${anomalies.length} anomalies`, icon('arrow-right'))));
+
+  const gem = result.narration_source === 'gemini';
+  const lines = result.narration || [];
+  $('dashCallout').dataset.source = gem ? 'gemini' : 'fallback';
+  clear($('calloutIcon')).append(icon(gem ? 'sparkles' : 'list-checks'));
+  $('calloutSrc').textContent = gem ? 'Gemini narration, every number fact-checked' : 'Deterministic narration from the computed facts';
+  clear($('calloutText')).append(lines.length ? highlightNumbers(lines[0]) : 'No narration for this run.');
+  show('dashCallout', true);
+
+  $('dashEmpty').classList.add('hidden');
+  $('dashSkeleton').classList.add('hidden');
+  $('dashContent').classList.remove('hidden');
+}
+
+const NARRATION_REASONS = {
+  no_key: 'Gemini is not configured, so IDAA wrote this narration directly from the computed facts.',
+  sdk_missing: 'The google-genai package is not installed, so the deterministic narration was used.',
+  api_error: 'Gemini returned an error, so the deterministic narration was used instead.',
+  error: 'Gemini could not be reached, so the deterministic narration was used instead.',
+  invalid_output: 'Gemini’s answer did not pass the fact check, so the deterministic narration was used instead.',
+  no_payload: 'There were no facts to narrate.',
+};
+
+const FACT_KINDS = { total_revenue: 'money', avg_order_value: 'money', cancellation_rate_pct: 'pct', return_rate_pct: 'pct',
+  avg_age: 'num', avg_attendance_days: 'days', busiest_day: 'date' };
+const humanize = k => cap(String(k).replace(/^top_/, '').replace(/_pct$/, '').replace(/_/g, ' '));
+
+function lineageNode(tone, ic, count, label, focus) {
+  const attrs = focus ? { 'data-go': 'insights', 'data-focus': focus, type: 'button' } : {};
+  return el(focus ? 'button' : 'div', { class: 'lin-node', 'data-tone': tone, ...attrs },
+    el('span', { class: 'lin-icon' }, icon(ic)),
+    el('span', {}, el('div', { class: 'lin-count', text: String(count) }), el('div', { class: 'lin-label', text: label })));
+}
+
+function renderInsights(result) {
+  const gem = result.narration_source === 'gemini';
+  const ins = result.insights || {};
+  const keyMetrics = ins.key_metrics || {};
+  const performers = ins.top_performers || {};
+  const anomalies = byMagnitude(result.anomalies);
+  const lines = result.narration || [];
+
+  const lin = clear($('lineage'));
+  lin.append(
+    lineageNode('info', 'sigma', Object.keys(keyMetrics).length + Object.keys(performers).length, 'Computed facts'),
+    el('span', { class: 'lin-arrow' }, icon('arrow-right')),
+    lineageNode(anomalies.length ? 'alert' : 'ok', anomalies.length ? 'triangle-alert' : 'shield-check', anomalies.length,
+      anomalies.length === 1 ? 'Anomaly flagged' : 'Anomalies flagged', 'ledger'),
+    el('span', { class: 'lin-arrow' }, icon('arrow-right')),
+    lineageNode(gem ? 'ai' : 'info', gem ? 'sparkles' : 'list-checks', lines.length, gem ? 'Sentences by Gemini' : 'Deterministic sentences'));
+
+  const badge = $('narrationBadge');
+  badge.className = 'source-badge ' + (gem ? 'gemini' : 'fallback');
+  badge.textContent = gem ? 'Source: Google Gemini' : 'Source: deterministic fallback';
+  $('narrationNote').textContent = gem ? 'Every number in these sentences was checked against the computed facts before it was kept.'
+    : (NARRATION_REASONS[result.narration_reason] || 'Gemini was not used for this run.');
+  const list = clear($('insightList'));
+  list.dataset.source = gem ? 'gemini' : 'fallback';
+  lines.forEach((line, i) => list.append(el('li', {},
+    el('span', { class: 'narr-n', text: String(i + 1).padStart(2, '0') }), el('span', { class: 'narr-text' }, highlightNumbers(line)))));
+  if (!lines.length) list.append(el('li', {}, el('span', { class: 'narr-n', text: '00' }), el('span', { class: 'narr-text muted', text: 'No narration for this run.' })));
+
+  const facts = clear($('factGrid'));
+  Object.entries(keyMetrics).forEach(([k, v]) => facts.append(el('div', { class: 'fact' },
+    el('dt', { text: humanize(k) }), el('dd', { text: formatValue(v, FACT_KINDS[k] || (Number.isInteger(v) ? 'count' : 'num')) || 'N/A' }))));
+  if (ins.trend_direction) facts.append(el('div', { class: 'fact wide' }, el('dt', { text: 'Revenue trend, last month vs the one before' }),
+    el('dd', { text: ins.trend_direction === 'unavailable' ? 'Unavailable for this dataset' : cap(ins.trend_direction) })));
+
+  const perf = clear($('performerGrid'));
+  const countKind = result.schema_type === 'gym';
+  Object.entries(performers).forEach(([k, p]) => perf.append(el('div', { class: 'fact' },
+    el('dt', { text: humanize(k) }),
+    el('dd', {}, cap(p && p.name != null ? p.name : 'N/A'), ' ',
+      el('small', { text: p && p.value != null ? formatValue(p.value, countKind ? 'count' : 'money') : '' })))));
+  if (!perf.children.length) perf.append(el('div', { class: 'fact wide' }, el('dt', { text: 'Top performers' }), el('dd', { text: 'None for this dataset' })));
+  $('insightJson').textContent = JSON.stringify(ins, null, 2);
+
+  renderLedger(anomalies, false);
+  $('insightsEmpty').classList.add('hidden');
+  $('insightsContent').classList.remove('hidden');
+}
+
+function renderLedger(anomalies, all) {
+  const box = clear($('ledgerList'));
+  if (!anomalies.length) {
+    box.append(el('p', { class: 'muted', style: 'font-size:13px', text: `No value in this dataset is more than ${Z_THRESHOLD} standard deviations from its column mean.` }));
+    return;
+  }
+  const maxZ = Math.max(...anomalies.map(a => Math.abs(a.z_score)), Z_THRESHOLD + 1);
+  const shown = all ? anomalies : anomalies.slice(0, 12);
+  shown.forEach(a => {
+    const [, sevLabel, sevColor] = severity(a.z_score);
+    const pos = Math.min(100, Math.max(0, (Math.abs(a.z_score) - Z_THRESHOLD) / (maxZ - Z_THRESHOLD) * 100));
+    box.append(el('details', { class: 'lrow' },
+      el('summary', {},
+        el('span', { class: 'anom-dir' }, icon(a.type === 'spike' ? 'arrow-up-right' : 'arrow-down-right')),
+        el('span', { class: 'lrow-col' }, a.column, el('small', { text: `${a.type === 'spike' ? 'Spike' : 'Drop'}, ${sevLabel.toLowerCase()}` })),
+        el('span', { class: 'lrow-val', text: Number(a.value).toLocaleString('en-IN') }),
+        el('span', { class: 'zscale', title: `z = ${a.z_score}` },
+          el('span', { class: 'ztrack' }, el('span', { class: 'zdot', style: `left:${pos}%;background:${sevColor}` })),
+          el('span', { class: 'zlab', text: `z ${a.z_score}` })),
+        el('span', { class: 'lrow-row', text: `row ${a.row_index}` }),
+        el('span', { class: 'lrow-chev' }, icon('chevron-right'))),
+      el('p', { class: 'lrow-body', text: `Row ${a.row_index} has ${a.column} = ${Number(a.value).toLocaleString('en-IN')}, which is ${Math.abs(a.z_score)} standard deviations ${a.z_score > 0 ? 'above' : 'below'} the column mean. IDAA flags any value beyond ${Z_THRESHOLD}. ${sevLabel} severity.` })));
+  });
+  if (!all && anomalies.length > shown.length) {
+    const more = el('button', { class: 'link-btn ledger-more', type: 'button' }, `Show all ${anomalies.length}`, icon('chevron-down'));
+    more.addEventListener('click', () => { renderLedger(anomalies, true); icons(); });
+    box.append(more);
+  }
+}
+
+/* =====================================================================
+   Report
+   ===================================================================== */
+const REPORT_STATES = {
+  idle:  ['file-clock', 'Waiting for an analysis'],
+  ready: ['file-check', 'Ready to generate'],
+  busy:  ['loader', 'Generating PDF'],
+  done:  ['circle-check', 'Downloaded'],
+  error: ['circle-x', 'Generation failed'],
+};
+function setReportState(name, text) {
+  const [ic, label] = REPORT_STATES[name];
+  $('reportGen').dataset.state = name;
+  const holder = $('reportGen').querySelector('.gen-state');
+  holder.replaceChild(icon(ic), holder.firstElementChild);
+  $('reportState').textContent = text || label;
+  icons();
+}
+function resetReport() {
+  $('downloadPdf').disabled = true;
+  $('reportHint').textContent = 'Run an analysis first.';
+  $('reportMeta').textContent = 'Run an analysis to preview the report.';
+  clear($('reportKpis'));
+  clear($('reportCharts')).append(el('p', { class: 'muted', style: 'font-size:13px', text: 'No data yet.' }));
+  clear($('reportInsights')).append(el('li', { class: 'muted', text: 'No narration yet.' }));
+  clear($('reportAnomalies')).append(el('li', { class: 'muted', text: 'No anomalies yet.' }));
+  $('reportSource').textContent = '';
+  clear($('reportContents'));
+  setReportState('idle');
+}
+
+function renderReportPreview(result) {
+  const view = SCHEMA_VIEWS[result.schema_type];
+  const metrics = result.analytics.metrics || {};
+  const computed = when(result.analytics.computed_at);
+  $('reportMeta').textContent = `${result.filename || 'Unnamed dataset'}, ${view ? view.label.toLowerCase() : result.schema_type} data` + (computed ? `, computed ${computed}` : '');
+  if (view) renderKpis($('reportKpis'), view, metrics, false); else clear($('reportKpis'));
+
+  const charts = clear($('reportCharts'));
+  const specs = view ? view.charts : [];
+  let drawn = 0;
+  specs.forEach(spec => {
+    const entries = Object.entries(metrics[spec.key] || {});
+    if (!entries.length) return;
+    drawn += 1;
+    const rows = (spec.chrono ? entries.sort((a, b) => a[0].localeCompare(b[0])) : entries.sort((a, b) => b[1] - a[1])).slice(0, 8);
+    const max = Math.max(...rows.map(r => r[1]));
+    charts.append(el('div', { class: 'bars-title', text: spec.title }), el('div', { class: 'bars' }, rows.map(([k, v]) => el('div', { class: 'bar-row' + (v === max ? ' lead' : '') },
+      el('span', { class: 'b-name', text: k }),
+      el('span', {}, el('div', { class: 'b-bar', style: `width:${max > 0 ? Math.max(1, v / max * 100) : 0}%` })),
+      el('span', { class: 'b-val', text: spec.money ? compact(v, true) : fmt.count(v) })))));
+  });
+  if (!drawn) charts.append(el('p', { class: 'muted', style: 'font-size:13px', text: 'No breakdown data for this dataset.' }));
+
+  const gem = result.narration_source === 'gemini';
+  $('reportSource').textContent = gem ? 'from Gemini' : 'deterministic';
+  const ins = clear($('reportInsights'));
+  (result.narration || []).forEach(line => ins.append(el('li', { text: line })));
+  if (!ins.children.length) ins.append(el('li', { class: 'muted', text: 'No narration for this run.' }));
+  const anomalies = byMagnitude(result.anomalies);
+  const an = clear($('reportAnomalies'));
+  anomalies.slice(0, 5).forEach(a => an.append(el('li', { text: `${anomalyTitle(a)} at row ${a.row_index}: ${Number(a.value).toLocaleString('en-IN')} (z ${a.z_score})` })));
+  if (!an.children.length) an.append(el('li', { text: 'No anomalies detected.' }));
+
+  const contents = clear($('reportContents'));
+  const item = (on, title, sub) => contents.append(el('li', { class: on ? '' : 'off' }, icon(on ? 'check' : 'minus'), el('span', {}, title, el('small', { text: sub }))));
+  item(!!view, 'Key metrics', view ? `${view.kpis.length} figures` : 'Generic metrics');
+  item(drawn > 0, 'Breakdown charts', specs.map(s => s.title).join(', ') || 'None');
+  item(true, 'Anomalies', anomalies.length ? `${anomalies.length} flagged` : 'None flagged');
+  item((result.narration || []).length > 0, 'Narration', `${(result.narration || []).length} sentences, ${gem ? 'Gemini' : 'deterministic'}`);
+
+  $('downloadPdf').disabled = false;
+  $('reportHint').textContent = 'Built on the server from the saved analysis, nothing is recalculated.';
+  setReportState('ready');
+}
+
+async function downloadPdf() {
+  if (!state.result) return;
+  const btn = $('downloadPdf');
+  btn.disabled = true;
+  setReportState('busy');
+  try {
+    const res = await fetch(`${API_BASE}/report/${encodeURIComponent(state.result.file_id)}`);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      const msg = (body && typeof body.detail === 'string') ? body.detail : `Report failed (${res.status})`;
+      setReportState('error', msg);
+      toast(msg, 'err');
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = el('a', { href: url, download: `idaa_report_${state.result.file_id.slice(0, 8)}.pdf` });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setReportState('done', `Downloaded, ${(blob.size / 1024).toFixed(0)} KB`);
+    toast('PDF report downloaded');
+  } catch (e) {
+    setReportState('error', 'Network error');
+    toast('Network error while downloading the report', 'err');
+  } finally {
+    btn.disabled = !state.result;
+  }
+}
+
+/* =====================================================================
+   Result orchestration
+   ===================================================================== */
+function showResult(result) {
+  state.result = result;
+  const view = SCHEMA_VIEWS[result.schema_type];
+  $('datasetChip').textContent = `${result.filename || 'dataset'} · ${result.schema_type}`;
+  $('ctxName').textContent = result.filename || 'Unnamed dataset';
+  const p = result.db_persistence || {};
+  $('ctxMeta').textContent = (view ? view.label : result.schema_type) + (p.run_id ? `, run #${p.run_id}` : '');
+  $('railContext').classList.remove('hidden');
+  const n = (result.anomalies || []).length;
+  $('navMetaInsights').textContent = n ? String(n) : '';
+  renderDashboard(result);
+  renderInsights(result);
+  renderReportPreview(result);
+  if (state.page !== 'dashboard') $('navDotDashboard').classList.remove('hidden');
+  icons();
+}
+
+/* Restore the last analysis after a reload (a per-browser convenience). */
+async function restoreLast() {
+  let fileId = null;
+  try { fileId = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+  if (!fileId) return;
+  const epoch = state.navEpoch;
+  try {
+    const res = await fetch(`${API_BASE}/results/${encodeURIComponent(fileId)}`);
+    if (!res.ok) return;
+    showResult(await res.json());
+    if (state.navEpoch === epoch && !state.busy) go('dashboard');
+  } catch (e) { /* backend offline: keep the empty state */ }
+}
+
+/* =====================================================================
+   Wiring
+   ===================================================================== */
+const dz = $('dropzone');
+dz.addEventListener('click', () => { if (!state.busy) $('fileInput').click(); });
+dz.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !state.busy) { e.preventDefault(); $('fileInput').click(); } });
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (!state.busy) chooseFile(e.dataTransfer.files[0]); });
+$('fileInput').addEventListener('change', e => chooseFile(e.target.files[0]));
+$('startBtn').addEventListener('click', startPipeline);
+$('retryBtn').addEventListener('click', () => { if (state.upload) { hideError(); $('retryBtn').classList.add('hidden'); runAnalysis(state.upload.file_id); } });
+$('openDashBtn').addEventListener('click', () => go('dashboard'));
+$('downloadPdf').addEventListener('click', downloadPdf);
+$('healthToggle').addEventListener('click', () => {
+  const open = document.body.classList.toggle('health-open');
+  $('healthToggle').setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.body.classList.contains('health-open')) {
+    document.body.classList.remove('health-open');
+    $('healthToggle').setAttribute('aria-expanded', 'false');
+    $('healthToggle').focus();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  readTokens();
+  configureChartDefaults();
+  resetReport();
+  icons();
+  loadHealth();
+  restoreLast();
+});
+</script>
+</body>
+</html>
